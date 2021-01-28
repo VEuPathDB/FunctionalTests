@@ -21,6 +21,7 @@ import static org.testng.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
 import org.apidb.eupathsitecommon.watar.pages.HomePage;
 import org.apidb.eupathsitecommon.watar.pages.LoginPage;
 import org.apidb.eupathsitecommon.watar.pages.SearchForm;
@@ -137,6 +138,39 @@ public class SeleniumTests {
     return searchesArrayList.iterator();
   }
   
+  
+  @DataProvider(name = "datasets")
+  public Iterator<Object[]> createDatasets() {
+   
+    ArrayList<Object[]> datasetsArrayList = new ArrayList<Object[]>();
+    
+    JSONObject datasetsJson = parseEndpoint(baseurl + "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig=%7B\"attributes\"%3A%5B\"primary_key\"%5D%2C\"tables\"%3A%5B%5D%7D", "datasets");
+    JSONObject datasetsObj = (JSONObject) datasetsJson.get("datasets");
+    JSONArray recordsArray = (JSONArray) datasetsObj.get("records");
+
+    for(int i = 0; i < recordsArray.length(); i++) {
+      JSONObject record = (JSONObject) recordsArray.get(i);
+      JSONArray idArray = (JSONArray) record.get("id");
+
+      JSONObject id = (JSONObject) idArray.get(0);
+      
+      String datasetId = id.getString("value"); 
+      
+      String datasetPage = this.baseurl + "/app/record/dataset/" + datasetId;
+
+      Object[] da = new Object[2];
+      da[0] = datasetPage;
+      da[1] = datasetId;
+      
+      datasetsArrayList.add(da);
+    }
+
+    return datasetsArrayList.iterator();
+  }
+
+  
+  
+  
   @Test(dataProvider = "searches",
       description="Assert search page loads without error",
       groups = {"functional_tests"})
@@ -177,6 +211,16 @@ public class SeleniumTests {
     staticContentPage.waitForPageToLoad();
   }
 
+  @Test(dataProvider="datasets", 
+      description="Assert static content page loads without error and static-content element is present",
+      groups = { "static_content" })
+  public void datasetPage (String datasetPageUrl, String datasetId) {
+    driver.get(datasetPageUrl);
+
+    DatasetPage datasetPage = new DatasetPage(driver);
+    datasetPage.waitForPageToLoad();
+    assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
+  }
 
   public JSONObject parseEndpoint (String url, String rootName)  {
     this.driver.get(url);
