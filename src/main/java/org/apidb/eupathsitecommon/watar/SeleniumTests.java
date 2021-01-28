@@ -203,7 +203,7 @@ public class SeleniumTests {
    */
   @Test(dataProvider="staticPages", 
       description="Assert static content page loads without error and static-content element is present",
-      groups = { "static_content" })
+      groups = { "functional_tests" })
   public void staticPage (String url, String name) {
     String staticPageUrl = this.baseurl + url;
     driver.get(staticPageUrl);
@@ -212,8 +212,8 @@ public class SeleniumTests {
   }
 
   @Test(dataProvider="datasets", 
-      description="Assert static content page loads without error and static-content element is present",
-      groups = { "static_content" })
+      description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
+      groups = { "functional_tests" })
   public void datasetPage (String datasetPageUrl, String datasetId) {
     driver.get(datasetPageUrl);
 
