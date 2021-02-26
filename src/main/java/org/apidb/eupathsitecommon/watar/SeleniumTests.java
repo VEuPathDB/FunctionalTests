@@ -11,6 +11,7 @@ import org.testng.annotations.Test;
 
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
+import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
+import org.apidb.eupathsitecommon.watar.pages.GenesByTaxonSearchPage;
 import org.apidb.eupathsitecommon.watar.pages.HomePage;
 import org.apidb.eupathsitecommon.watar.pages.LoginPage;
 import org.apidb.eupathsitecommon.watar.pages.SearchForm;
+import org.apidb.eupathsitecommon.watar.pages.SearchResultsPage;
 import org.apidb.eupathsitecommon.watar.pages.Service;
 import org.apidb.eupathsitecommon.watar.pages.StaticContent;
 
@@ -183,11 +186,18 @@ public class SeleniumTests {
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
   }
   @Test(description="Assert home page loads and the featured tool section is present.",
-      groups = { "functional_tests" })
+      groups = { "functional_tests", "performance_tests" })
   public void homePage () {
+
+    long startTime = System.nanoTime();    
     driver.get(this.baseurl);
     HomePage homePage = new HomePage(driver);
     homePage.waitForPageToLoad();
+
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
+
     assertTrue(homePage.selectedToolBodyCount() == 1, "assert Selected Tool Body was present");
     String initialSelectedToolText = homePage.selectedToolHeaderText();
     homePage.changeSelectedTool();
@@ -222,6 +232,89 @@ public class SeleniumTests {
     assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
   }
 
+  @Test(description="Performance Test Filter Param Search Form",
+      groups = { "performance_tests" })
+  public void geneFilterSearchPage () {
+
+    String url = this.baseurl + Utilities.GENE_MODEL_CHARS_SEARCH; 
+    
+    long startTime = System.nanoTime();        
+    driver.get(url);
+
+    SearchForm searchForm = new SearchForm(driver, true);
+    searchForm.waitForPageToLoad();
+
+    assertTrue(!searchForm.containsError(), "Search form Contained Error: " + Utilities.GENE_MODEL_CHARS_SEARCH);
+
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
+    
+  }
+
+  
+  @Test(description="Performance Test Simple Search Result",
+      groups = { "functional_tests", "performance_tests" })
+  public void geneSearchResultsPage () {
+
+    int expectedResult = 1000;
+    String url = this.baseurl + Utilities.GENES_BY_TAXON_SEARCH; 
+    driver.get(url);
+
+    GenesByTaxonSearchPage searchForm = new GenesByTaxonSearchPage(driver, true);
+    searchForm.waitForPageToLoad();
+    assertTrue(!searchForm.containsError(), "Search form Contained Error: " + Utilities.GENES_BY_TAXON_SEARCH);
+
+    searchForm.clickFirstTaxon();
+    searchForm.getAnswer();
+
+    long startTime = System.nanoTime();    
+    for(String winHandle : driver.getWindowHandles()){
+        driver.switchTo().window(winHandle);
+    }
+    
+    SearchResultsPage searchResults = new SearchResultsPage(driver);
+    searchResults.waitForPageToLoad();
+    int resultSize = searchResults.organismFilterFirstNodeCount();
+    assertTrue(resultSize > expectedResult, "Search Resulted in " + resultSize + " which is less than the expected size of " + expectedResult);
+
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
+
+  }
+
+
+  @Test(description="Performance Test Organism Results Page",
+      groups = { "functional_tests", "performance_tests" })
+  public void organismResultsPage () {
+
+    String url = this.baseurl + Utilities.ORGANISM_RESULTS; 
+    long startTime = System.nanoTime();    
+    driver.get(url);
+    SearchResultsPage searchResults = new SearchResultsPage(driver);
+    searchResults.waitForPageToLoad();
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
+}
+
+  @Test(description="Performance Test Datasets Results Page",
+      groups = { "functional_tests", "performance_tests" })
+  public void datasetResultsPage () {
+
+    String url = this.baseurl + Utilities.DATASET_RESULTS; 
+    long startTime = System.nanoTime();
+    driver.get(url);
+    SearchResultsPage searchResults = new SearchResultsPage(driver);
+    searchResults.waitForPageToLoad();
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);    
+  }
+
+  
+  
   public JSONObject parseEndpoint (String url, String rootName)  {
     this.driver.get(url);
     Service servicePage = new Service(driver);

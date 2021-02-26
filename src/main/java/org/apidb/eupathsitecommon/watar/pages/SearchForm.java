@@ -11,6 +11,8 @@ public class SearchForm extends AjaxPage {
   private By foldChangeParams = By.cssSelector(".wdk-FoldChangeParams");
   private By wizardParams = By.cssSelector(".ebrc-QuestionWizardParamContainer");
   
+  private By getAnswer = By.xpath("//button[contains(.,'Get Answer')]");
+  
   //private By standardSubmit = By.cssSelector(".wdk-QuestionFormSubmitSection");
   //private By wizardSubmit = By.cssSelector(".ebrc-QuestionWizardSubmitContainer");
 
@@ -21,6 +23,11 @@ public class SearchForm extends AjaxPage {
   public SearchForm(WebDriver driver, boolean hasParameters){
     super(driver);
     this.hasParameters = hasParameters;
+  }
+
+
+  public void getAnswer() {
+    this.driver.findElement(this.getAnswer).click();
   }
 
   

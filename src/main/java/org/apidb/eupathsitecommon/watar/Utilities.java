@@ -1,10 +1,16 @@
 package org.apidb.eupathsitecommon.watar;
 
 public class Utilities {
-
+  public static final String PAGE_LOAD_TIME = "PageLoadTime";
+  
   public static final String GENE_RECORD_PATH_TMPL = "/app/record/gene/";
   public static final String WSF_PATH = "/service";
 
+  public static final String GENE_MODEL_CHARS_SEARCH = "/app/search/transcript/GenesByGeneModelChars";
+  public static final String GENES_BY_TAXON_SEARCH = "/app/search/transcript/GenesByTaxon";
+  public static final String ORGANISM_RESULTS = "/app/search/organism/GenomeDataTypes/result";
+  public static final String DATASET_RESULTS = "/app/search/dataset/AllDatasets/result";
+  
   // Community
   public static final String NEWS_PATH = "/app/static-content/PlasmoDB/news.html";
   public static final String RELATED_SITES = "/app/static-content/PlasmoDB/externalLinks.html";
