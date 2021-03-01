@@ -14,13 +14,12 @@ public class LoginPage extends Page {
   private String p;
   
   public LoginPage(WebDriver driver, String u, String p) {
-    super(driver);
+    super(driver, Utilities.LOGIN_PAGE);
     this.u = u;
     this.p = p;
   }
 
   public void login() {
-    driver.get (Utilities.LOGIN_PAGE);
     driver.findElement(username).sendKeys(this.u);
     driver.findElement(password).sendKeys(this.p);
     driver.findElement(login).click();

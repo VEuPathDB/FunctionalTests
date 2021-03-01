@@ -23,12 +23,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
+import org.apidb.eupathsitecommon.watar.pages.GeneRecordPage;
+import org.apidb.eupathsitecommon.watar.pages.GenesByLocusTagSearchPage;
 import org.apidb.eupathsitecommon.watar.pages.GenesByTaxonSearchPage;
 import org.apidb.eupathsitecommon.watar.pages.HomePage;
 import org.apidb.eupathsitecommon.watar.pages.LoginPage;
 import org.apidb.eupathsitecommon.watar.pages.SearchForm;
 import org.apidb.eupathsitecommon.watar.pages.SearchResultsPage;
 import org.apidb.eupathsitecommon.watar.pages.Service;
+import org.apidb.eupathsitecommon.watar.pages.SiteSearchResults;
 import org.apidb.eupathsitecommon.watar.pages.StaticContent;
 
 public class SeleniumTests {
@@ -142,6 +145,21 @@ public class SeleniumTests {
   }
   
   
+  @DataProvider(name = "geneIds")
+  public Iterator<Object[]> createGeneIds() {
+    ArrayList<Object[]> genesArrayList = new ArrayList<Object[]>();
+    GenesByLocusTagSearchPage searchForm = new GenesByLocusTagSearchPage(driver, this.baseurl);
+    searchForm.waitForPageToLoad();
+    String defaultGeneId = searchForm.scrapeGeneIdFromTextArea();
+    Object[] ga = new Object[1];
+    ga[0] = defaultGeneId;
+    genesArrayList.add(ga);
+
+  return genesArrayList.iterator();
+
+    
+  }
+  
   @DataProvider(name = "datasets")
   public Iterator<Object[]> createDatasets() {
    
@@ -178,9 +196,9 @@ public class SeleniumTests {
       description="Assert search page loads without error",
       groups = {"functional_tests"})
   public void searchPage(String queryPage, String fullName, boolean hasParameters) {
-    driver.get(queryPage);
 
-    SearchForm searchForm = new SearchForm(driver, hasParameters);
+
+    SearchForm searchForm = new SearchForm(driver, hasParameters, queryPage);
     searchForm.waitForPageToLoad();
 
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
@@ -190,8 +208,7 @@ public class SeleniumTests {
   public void homePage () {
 
     long startTime = System.nanoTime();    
-    driver.get(this.baseurl);
-    HomePage homePage = new HomePage(driver);
+    HomePage homePage = new HomePage(driver, this.baseurl);
     homePage.waitForPageToLoad();
 
     long endTime = System.nanoTime();
@@ -216,8 +233,7 @@ public class SeleniumTests {
       groups = { "functional_tests" })
   public void staticPage (String url, String name) {
     String staticPageUrl = this.baseurl + url;
-    driver.get(staticPageUrl);
-    StaticContent staticContentPage = new StaticContent(driver);
+    StaticContent staticContentPage = new StaticContent(driver, staticPageUrl);
     staticContentPage.waitForPageToLoad();
   }
 
@@ -225,9 +241,7 @@ public class SeleniumTests {
       description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
       groups = { "functional_tests" })
   public void datasetPage (String datasetPageUrl, String datasetId) {
-    driver.get(datasetPageUrl);
-
-    DatasetPage datasetPage = new DatasetPage(driver);
+    DatasetPage datasetPage = new DatasetPage(driver, datasetPageUrl);
     datasetPage.waitForPageToLoad();
     assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
   }
@@ -237,11 +251,9 @@ public class SeleniumTests {
   public void geneFilterSearchPage () {
 
     String url = this.baseurl + Utilities.GENE_MODEL_CHARS_SEARCH; 
-    
     long startTime = System.nanoTime();        
-    driver.get(url);
 
-    SearchForm searchForm = new SearchForm(driver, true);
+    SearchForm searchForm = new SearchForm(driver, true, url);
     searchForm.waitForPageToLoad();
 
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + Utilities.GENE_MODEL_CHARS_SEARCH);
@@ -258,10 +270,7 @@ public class SeleniumTests {
   public void geneSearchResultsPage () {
 
     int expectedResult = 1000;
-    String url = this.baseurl + Utilities.GENES_BY_TAXON_SEARCH; 
-    driver.get(url);
-
-    GenesByTaxonSearchPage searchForm = new GenesByTaxonSearchPage(driver, true);
+    GenesByTaxonSearchPage searchForm = new GenesByTaxonSearchPage(driver, this.baseurl);
     searchForm.waitForPageToLoad();
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + Utilities.GENES_BY_TAXON_SEARCH);
 
@@ -269,11 +278,8 @@ public class SeleniumTests {
     searchForm.getAnswer();
 
     long startTime = System.nanoTime();    
-    for(String winHandle : driver.getWindowHandles()){
-        driver.switchTo().window(winHandle);
-    }
-    
-    SearchResultsPage searchResults = new SearchResultsPage(driver);
+    // The search form click() above navigates to this page (NO url provided to constructor)
+    SearchResultsPage searchResults = new SearchResultsPage(driver, null);
     searchResults.waitForPageToLoad();
     int resultSize = searchResults.organismFilterFirstNodeCount();
     assertTrue(resultSize > expectedResult, "Search Resulted in " + resultSize + " which is less than the expected size of " + expectedResult);
@@ -291,8 +297,7 @@ public class SeleniumTests {
 
     String url = this.baseurl + Utilities.ORGANISM_RESULTS; 
     long startTime = System.nanoTime();    
-    driver.get(url);
-    SearchResultsPage searchResults = new SearchResultsPage(driver);
+    SearchResultsPage searchResults = new SearchResultsPage(driver, url);
     searchResults.waitForPageToLoad();
     long endTime = System.nanoTime();
     long duration = (endTime - startTime) / 1000000;
@@ -305,13 +310,60 @@ public class SeleniumTests {
 
     String url = this.baseurl + Utilities.DATASET_RESULTS; 
     long startTime = System.nanoTime();
-    driver.get(url);
-    SearchResultsPage searchResults = new SearchResultsPage(driver);
+
+    SearchResultsPage searchResults = new SearchResultsPage(driver, url);
     searchResults.waitForPageToLoad();
     long endTime = System.nanoTime();
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);    
   }
+
+  
+  @Test(dataProvider="geneIds", 
+        description="Performance Test Default Gene Record Page",
+        groups = { "functional_tests", "performance_tests" })
+  public void geneRecordPage (String geneId) {
+    String geneRecordUrl = this.baseurl + Utilities.GENE_RECORD_PATH_TMPL + geneId;
+
+    long startTime = System.nanoTime();
+    GeneRecordPage geneRecordPage = new GeneRecordPage(this.driver, geneRecordUrl);
+    geneRecordPage.waitForPageToLoad();
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);    
+  }
+  
+  @Test(description="Performance Test Sequence Retrieval Tool",
+      groups = { "functional_tests", "performance_tests" })
+  public void geneSrtTool (String geneId) {
+
+    // TODO
+    // SRT object
+    // SRT Result?
+  
+}
+
+  @Test(dataProvider="geneIds", 
+        description="Performance Test Site Search",
+        groups = { "functional_tests", "performance_tests" })
+  public void geneIdSiteSearch (String geneId) {
+
+
+    HomePage homePage = new HomePage(driver, this.baseurl);
+    homePage.waitForPageToLoad();
+
+    long startTime = System.nanoTime();    
+    homePage.doSiteSearch(geneId);
+    SiteSearchResults siteSearchResults = new SiteSearchResults(this.driver);
+    siteSearchResults.waitForPageToLoad();
+    String found = siteSearchResults.findExactMatchString();
+
+    assertTrue(found.contentEquals(geneId), "Expected Exact Match to " + geneId + "but found="+ found);
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
+
+}
 
   
   

@@ -15,8 +15,8 @@ public class DatasetPage extends AjaxPage {
   
   private By unhandledErrors = By.cssSelector(".UnhandledErrors");
   
-  public DatasetPage(WebDriver driver){
-    super(driver);
+  public DatasetPage(WebDriver driver, String url){
+    super(driver, url);
     driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
   }
 

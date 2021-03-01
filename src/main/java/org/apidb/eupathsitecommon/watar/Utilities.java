@@ -6,8 +6,11 @@ public class Utilities {
   public static final String GENE_RECORD_PATH_TMPL = "/app/record/gene/";
   public static final String WSF_PATH = "/service";
 
+  public static final String SRT_TOOL = "/app/fasta-tool";
+  
   public static final String GENE_MODEL_CHARS_SEARCH = "/app/search/transcript/GenesByGeneModelChars";
   public static final String GENES_BY_TAXON_SEARCH = "/app/search/transcript/GenesByTaxon";
+  public static final String GENES_BY_LOCUS_SEARCH = "/app/search/transcript/GeneByLocusTag";
   public static final String ORGANISM_RESULTS = "/app/search/organism/GenomeDataTypes/result";
   public static final String DATASET_RESULTS = "/app/search/dataset/AllDatasets/result";
   

@@ -13,15 +13,10 @@ public class SearchForm extends AjaxPage {
   
   private By getAnswer = By.xpath("//button[contains(.,'Get Answer')]");
   
-  //private By standardSubmit = By.cssSelector(".wdk-QuestionFormSubmitSection");
-  //private By wizardSubmit = By.cssSelector(".ebrc-QuestionWizardSubmitContainer");
-
-  //private By questionHeader = By.cssSelector(".wdk-QuestionFormQuestionHeader");
-  
   private boolean hasParameters;
-  
-  public SearchForm(WebDriver driver, boolean hasParameters){
-    super(driver);
+    
+  public SearchForm(WebDriver driver, boolean hasParameters, String queryPage){
+    super(driver, queryPage);
     this.hasParameters = hasParameters;
   }
 
@@ -49,19 +44,6 @@ public class SearchForm extends AjaxPage {
           ));
     }   
 
-    /**
-    new WebDriverWait(driver, 10, 3)
-    .until(ExpectedConditions.or(
-        ExpectedConditions.presenceOfElementLocated(standardSubmit),
-        ExpectedConditions.presenceOfElementLocated(wizardSubmit)
-        ));
-        **/
-  }
-  
-  /**
-  public int questionHeaderCount() {
-    return driver.findElements(questionHeader).size();
-  }
- **/
+   }
 
 }

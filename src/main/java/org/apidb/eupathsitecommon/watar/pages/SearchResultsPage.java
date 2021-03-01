@@ -13,8 +13,8 @@ public class SearchResultsPage extends AjaxPage{
   private By primaryKeyColumn = By.cssSelector(".HeadingCell--key-primary_key");
   private By organismFilterFirstNode = By.cssSelector(".wdk-CheckboxTreeItem:nth-child(1) .OrganismFilter--NodeCount");
   
-  public SearchResultsPage(WebDriver driver) {
-    super(driver);
+  public SearchResultsPage(WebDriver driver, String url) {
+    super(driver, url);
   }
 
   @Override

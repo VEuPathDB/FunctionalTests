@@ -8,7 +8,7 @@ public class Service extends Page {
   private By content = By.xpath("//pre");
   
   public Service(WebDriver driver) {
-    super(driver);
+    super(driver, null);
   }
   
   public String jsonContent() {

@@ -15,9 +15,12 @@ public class HomePage extends AjaxPage{
   private By selectedTool = By.cssSelector(".vpdb-FeaturedToolsSelectionHeader");
 
   private By anotherTool = By.cssSelector(".fa-code-fork");
+  
+  private By siteSearchBox = By.name("q");
+  private By siteSearchSubmit = By.cssSelector("button > .fa-search");
     
-  public HomePage(WebDriver driver){
-    super(driver);
+  public HomePage(WebDriver driver, String baseurl){
+    super(driver, baseurl);
   }
 
   public void changeSelectedTool() {
@@ -42,5 +45,11 @@ public class HomePage extends AjaxPage{
   public String selectedToolHeaderText() {
     return driver.findElement(selectedTool).getText();
   }
+  
+  public void doSiteSearch(String text) {
+    this.driver.findElement(this.siteSearchBox).sendKeys(text);
+    this.driver.findElement(this.siteSearchSubmit).click();
+  }
+  
   
 }

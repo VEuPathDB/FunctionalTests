@@ -10,8 +10,8 @@ public class StaticContent extends AjaxPage{
   
   private By staticContent = By.cssSelector(".static-content");
 
-  public StaticContent(WebDriver driver){
-    super(driver);
+  public StaticContent(WebDriver driver, String url){
+    super(driver, url);
   }
 
   @Override
