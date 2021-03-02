@@ -248,7 +248,7 @@ public class SeleniumTests {
   }
 
   @Test(description="Performance Test Filter Param Search Form",
-      groups = { "performance_tests" })
+      groups = { "functional_tests", "performance_tests" })
   public void geneFilterSearchPage () {
 
     String url = this.baseurl + Utilities.GENE_MODEL_CHARS_SEARCH; 
