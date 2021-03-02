@@ -30,6 +30,7 @@ import org.apidb.eupathsitecommon.watar.pages.HomePage;
 import org.apidb.eupathsitecommon.watar.pages.LoginPage;
 import org.apidb.eupathsitecommon.watar.pages.SearchForm;
 import org.apidb.eupathsitecommon.watar.pages.SearchResultsPage;
+import org.apidb.eupathsitecommon.watar.pages.SequenceRetrievalTool;
 import org.apidb.eupathsitecommon.watar.pages.Service;
 import org.apidb.eupathsitecommon.watar.pages.SiteSearchResults;
 import org.apidb.eupathsitecommon.watar.pages.StaticContent;
@@ -335,13 +336,23 @@ public class SeleniumTests {
   
   @Test(description="Performance Test Sequence Retrieval Tool",
       groups = { "functional_tests", "performance_tests" })
-  public void geneSrtTool (String geneId) {
+  public void geneSrtTool () {
 
-    // TODO
-    // SRT object
-    // SRT Result?
-  
-}
+    SequenceRetrievalTool srt = new SequenceRetrievalTool(this.driver, this.baseurl);
+    srt.waitForPageToLoad();
+    
+    long startTime = System.nanoTime();        
+    srt.submit(); // submit the default
+
+    Service srtResult = new Service(this.driver);
+    String fastaContent = srtResult.pageContent();
+
+    assertTrue(fastaContent.startsWith(">"), "Defline of fasta file should start with >");
+    assertTrue(fastaContent.length() > 500, "FASTA file should have some content");
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime) / 1000000;
+    Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
+  }
 
   @Test(dataProvider="geneIds", 
         description="Performance Test Site Search",
@@ -364,13 +375,11 @@ public class SeleniumTests {
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
 
 }
-
-  
-  
+ 
   public JSONObject parseEndpoint (String url, String rootName)  {
     this.driver.get(url);
     Service servicePage = new Service(driver);
-    String jsonContent = servicePage.jsonContent();
+    String jsonContent = servicePage.pageContent();
     return new JSONObject("{ \"" + rootName + "\":" + jsonContent + "}");
   }
   

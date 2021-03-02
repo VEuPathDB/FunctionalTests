@@ -11,8 +11,10 @@ public class Service extends Page {
     super(driver, null);
   }
   
-  public String jsonContent() {
+  public String pageContent() {
     return driver.findElement(content).getText();
   }
 
+  
+  
 }
