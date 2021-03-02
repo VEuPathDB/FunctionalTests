@@ -1,0 +1,64 @@
+* FunctionalTests
+
+  Functional Tests using Seleium Web Driver.  These tests can be developed and run locally in eclipse.  They will also be incorporated into nightly runs of qa site builds for VEuPath Sites.
+
+** Selenium Webdriver
+   + browser automation (firefox,chrome) to run tests
+   + tests can be written in java,python,c#,Ruby,Javascript, ...
+   + find elements By cssClass,linkText,elmenentId,xpath
+   + Page Object Model (separate out the code which navigates the page from the tests)
+     + [[https://www.selenium.dev/documentation/en/guidelines_and_recommendations/page_object_models/][Page Object Model Guidelines]]
+       + Each kind of page gets its own java class.
+       + the hard bits about how to find elements is stored as instance variables of these classes
+       
+** IDE (Browser)
+   + Selenium has plugins for Firefox and Chrome 
+   + This allows you to Design tests through browser interactions
+   + You can export test to language of your choice (java (JUnit), python, ...)
+
+
+** Drivers for Web browsers
+   + [[https://chromedriver.chromium.org/downloads][Chrome Driver]]
+   + [[https://github.com/mozilla/geckodriver/releases/][Firefox Driver]]
+
+** Eclipse Setup for Developing Tests
+   + git clone https://github.com/VEuPathDB/FunctionalTests.git
+   + [[https://www.guru99.com/install-testng-in-eclipse.html][Install TestNG]]
+   + Download a Driver (Above)
+   + Import Projects
+     + From the Project Explorer click "import projects"
+     + click "Existing Maven Projects"
+     + select your project_home as the "Root Directory"
+     + select the pom.xml file
+   + Create a new "Run Configuration" For TestNG.  You can make a run config for a class,suite,method,...
+     + click on "Arguments" Tab and add VM arguments
+       #+BEGIN_EXAMPLE
+       Dbaseurl="https://hostdb.org"  -Dwebappname="hostdb" -Dusername="apidb" -Dpassword="$PASSWORD"
+       #+END_EXAMPLE
+     + click "Environment" Tab and add the path to your Chrome or Firefox Driver to the "PATH" variable.
+   + Apply/Save
+   + Run
+   
+** TestNG
+   + testing framework in java (similar to JUnit)
+   + integrated into Jenkins or run locally in eclipse
+   + groups of tests (deployment/dashboard) are associated with types of builds (Integration/QA/Production)
+     #+BEGIN_EXAMPLE
+      <test name="Integration" junit="false" enabled="true">
+        <groups>
+          <run>
+            <include name="functional_tests"/>
+            <include name="performance_tests"/>
+           </run>
+        </groups>
+        <classes>
+          <class name="org.apidb.eupathsitecommon.watar.SeleniumTests"/>
+        </classes>
+      </test>
+    #+END_EXAMPLE
+
+
+** TODO Headless Browsers / Docker Containers
+   + Can we use these in Jenkins runs after qa site builds?
+     + selenium/standalone-chrome
+     + selenium/standalone-firefox
