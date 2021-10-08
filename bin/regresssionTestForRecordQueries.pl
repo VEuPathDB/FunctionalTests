@@ -122,6 +122,7 @@ foreach my $db (@$dbs) {
              $queryFullName =~ /Graphs$/ ||
              $queryFullName =~ /^Orf/) {
             print STDERR "WARN: Skipping query: $queryFullName\n";
+            next;
           }
 
           my $sql = $sqlQuery->{sql}->[0];
