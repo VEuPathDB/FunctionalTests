@@ -8,6 +8,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.Dimension;
 
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
@@ -15,6 +16,7 @@ import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.HashMap;
 
 //import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -52,7 +54,6 @@ public class SeleniumTests {
     password = System.getProperty("password");
 
     //isPortal = baseurl.toLowerCase().contains("eupathdb");
-
   }
 
   @BeforeTest
@@ -63,15 +64,14 @@ public class SeleniumTests {
    LoginPage loginPage = new LoginPage(driver, username, password);
    loginPage.login();
 
-   
    //js = (JavascriptExecutor) driver;
   }
+  
   @AfterTest
   public void tearDown() {
    driver.quit();
   }
 
-  
   @DataProvider(name = "staticPages")
   public Iterator<Object[]> createStaticPages() {
     ArrayList<Object[]> staticPages = new ArrayList<Object[]>();
@@ -86,7 +86,6 @@ public class SeleniumTests {
     Object[] acks = { Utilities.ACKS, "Acknowledgements"}; 
     Object[] methods = { Utilities.METHODS, "Methods"}; 
     Object[] infra = { Utilities.INFRASTRUCTURE, "Infrastructure"}; 
-
     staticPages.add(ds);
     staticPages.add(news);
     staticPages.add(pubs);
@@ -97,50 +96,179 @@ public class SeleniumTests {
     staticPages.add(acks);
     staticPages.add(methods);
     staticPages.add(infra);
-    
     return staticPages.iterator();
+  } 
+  
+  @DataProvider(name= "rnaSeqProfile")
+  public Iterator<Object[]> rnaSeqProfile() {
+    
+    ArrayList<Object[]> finalReturnList = new ArrayList<Object[]>();
+    JSONObject datasetsObj = (JSONObject) parseObjectToObject(Utilities.RNA_SEQ_PROFILE);
+    JSONArray recordsArray = (JSONArray) datasetsObj.get("records");
+    
+    for (int i=0;i<recordsArray.length();i++) {
+      HashMap<String,Float> sampleValueFirstStrand = new HashMap<String, Float>();
+      HashMap<String,Float> sampleValueSecondStrand = new HashMap<String, Float>();
+      ArrayList<String> switchStrandsArrayList = new ArrayList<String>();
+      ArrayList<String> datasetIdArrayList = new ArrayList<String>();
+      JSONObject record = (JSONObject) recordsArray.get(i);
+      JSONObject tablesObj = (JSONObject) record.get("tables");
+      JSONArray rnaSeqSamplesInternal = tablesObj.getJSONArray("RNASeqSamplesInternal");
+      
+      for (int j = 0; j<rnaSeqSamplesInternal.length();j++) {
+        JSONObject currentRnaSeqSample = (JSONObject) rnaSeqSamplesInternal.get(j);
+        String studyName = currentRnaSeqSample.getString("study_name");
+        String averageValue = currentRnaSeqSample.getString("average_value");
+        Float averageValueFloat = Float.valueOf(averageValue).floatValue();
+        String sampleName = currentRnaSeqSample.getString("sample");
+        String switchStrands = currentRnaSeqSample.getString("switch_strands");
+        String datasetId = currentRnaSeqSample.getString("dataset_id");
+				        
+        if (studyName.contains("firststrand")) {
+          sampleValueFirstStrand.put(sampleName,averageValueFloat);
+          switchStrandsArrayList.add(switchStrands);
+          datasetIdArrayList.add(datasetId);
+        }
+ 
+        else if (studyName.contains("secondstrand")) {
+          sampleValueSecondStrand.put(sampleName,averageValueFloat);
+	  switchStrandsArrayList.add(switchStrands);
+	  datasetIdArrayList.add(datasetId);
+        }
+							          
+        else {
+          continue;
+        }
+      }
+      if (sampleValueFirstStrand.size()>0 && sampleValueSecondStrand.size()>0 && switchStrandsArrayList.size()>0) {
+        Object[] sa = new Object[4];
+        sa[0] = sampleValueFirstStrand;
+        sa[1] = sampleValueSecondStrand;
+        sa[2] = switchStrandsArrayList;
+        sa[3] = datasetIdArrayList;
+        finalReturnList.add(sa);
+      }
+    }
+    return finalReturnList.iterator();
   }
   
+  @Test(dataProvider = "rnaSeqProfile")
+  public void rnaSeqProfile (HashMap<String,Float> sampleValueFirstStrand, HashMap<String,Float> sampleValueSecondStrand, ArrayList<String> switchStrandArrayList, ArrayList<String> datasetIdArrayList) {
+    String firstSwitchStrand = switchStrandArrayList.get(1);
+    String firstDatasetId = datasetIdArrayList.get(0);
+    
+    for (int j = 0; j<datasetIdArrayList.size(); j++) {
+      String datasetId = datasetIdArrayList.get(j);
+      assertTrue(firstDatasetId.equals(datasetId), "Dataset IDs changed mid dataset " + firstDatasetId);
+    }
+    
+    assertTrue(sampleValueFirstStrand.size()==sampleValueSecondStrand.size(), "Number of first and second strands are not equal");
+    
+    for (int k = 0; k<switchStrandArrayList.size(); k++) {
+      String switchStrand = switchStrandArrayList.get(k);
+      assertTrue(firstSwitchStrand.equals(switchStrand), "switch_strand changed mid dataset " + firstDatasetId);
+    } 
+    
+    for (String i : sampleValueFirstStrand.keySet()) {
+      Float averageValueFirstStrand = sampleValueFirstStrand.get(i);
+      Float averageValueSecondStrand = sampleValueSecondStrand.get(i);
+      if (firstSwitchStrand.equals("false")) {
+        assertTrue(averageValueFirstStrand>averageValueSecondStrand, "Second Strand greater than First Strand " + firstDatasetId);
+      } 
+      else if (firstSwitchStrand.equals("true")) {
+        assertTrue(averageValueFirstStrand<averageValueSecondStrand, "First Strand greater than Second Strand " + firstDatasetId);
+      }
+    }
+  }
+
+  
+  @DataProvider(name = "allSearches")
+  public Iterator<Object[]> createAllSearches() {
+    ArrayList<Object[]> finalReturnList = new ArrayList<Object[]>();
+    HashMap<String,Integer> allSearches = new HashMap<String, Integer>();
+    JSONArray searchTypesArray = parseObjectToArray("/service/record-types");
+    
+    for (int i=0;i<searchTypesArray.length(); i++) {
+      String recordType = searchTypesArray.getString(i);
+      JSONArray searchesArray = parseObjectToArray("/service/record-types/" + recordType + "/searches");
+     
+      for(int j = 0; j < searchesArray.length(); j++) {
+        JSONObject search = (JSONObject) searchesArray.get(j);
+        String fullName = (String) search.get("fullName");
+        allSearches.put(fullName, 1); 
+      }
+    }
+    JSONObject datasetsObj = parseObjectToObject(Utilities.ALL_SEARCHES);
+    JSONArray recordsArray = (JSONArray) datasetsObj.get("records");
+    
+    for(int i = 0; i < recordsArray.length(); i++) {
+      ArrayList<String> targetNamesArrayList = new ArrayList<String>();
+      JSONObject record = (JSONObject) recordsArray.get(i);
+      JSONArray idArray = (JSONArray) record.get("id");
+      JSONObject id = (JSONObject) idArray.get(0);
+      String datasetId = id.getString("value");  
+      JSONObject tables = (JSONObject) record.get("tables");
+      JSONArray referencesArray = (JSONArray) tables.get("References"); 
+	  
+      for(int j = 0; j < referencesArray.length(); j++) {
+        JSONObject currentReference = (JSONObject) referencesArray.get(j);
+        Object targetType = currentReference.get("target_type");
+        Object targetName = currentReference.get("target_name");
+        if (targetType instanceof String && targetType.equals("question") && targetName instanceof String) {
+          String finaltargetName = currentReference.getString("target_name");
+          targetNamesArrayList.add(finaltargetName);
+        }
+       }
+       Object[] sa = new Object[3];
+       sa[0] = datasetId;
+       sa[1] = targetNamesArrayList;
+       sa[2] = allSearches;
+       finalReturnList.add(sa);
+    }
+    return finalReturnList.iterator();
+  }
+
+  @Test(dataProvider="allSearches")
+  public void allSearches (String datasetId, ArrayList<String> targetNamesArrayList, HashMap<String, Integer> allSearches) {
+    for(int j = 0; j < targetNamesArrayList.size(); j++) {
+      String currentTargetName = targetNamesArrayList.get(j);
+      assertTrue(allSearches.containsKey(currentTargetName), "Name not found in HashMap " + datasetId);
+    }
+  }
+ 
   @DataProvider(name = "searches")
   public Iterator<Object[]> createSearches() {
-   
-    ArrayList<Object[]> searchesArrayList = new ArrayList<Object[]>();
     
-    JSONObject recordTypesJson = parseEndpoint(baseurl + "/service/record-types", "record-types");
-    JSONArray recordTypesArray = (JSONArray) recordTypesJson.get("record-types");
-
+    ArrayList<Object[]> searchesArrayList = new ArrayList<Object[]>();
+    JSONArray recordTypesArray = parseObjectToArray("/service/record-types");
+    
     for(int i = 0; i < recordTypesArray.length(); i++) {
       String recordType = recordTypesArray.getString(i);
-
-      JSONObject searches = parseEndpoint(baseurl + "/service/record-types/" + recordType + "/searches", "searches");
-      JSONArray searchesArray = (JSONArray) searches.get("searches");
-
+      JSONArray searchesArray = parseObjectToArray("/service/record-types/" + recordType + "/searches");
+       
       for(int j = 0; j < searchesArray.length(); j++) {
         JSONObject search = (JSONObject) searchesArray.get(j);
         String urlSegment = (String) search.get("urlSegment");
         String fullName = (String) search.get("fullName");
         JSONArray paramNames = (JSONArray) search.get("paramNames");
-
+        
         if(urlSegment.equals("GenesByUserDatasetAntisense") || 
-            urlSegment.equals("GenesByRNASeqUserDataset") || 
-            urlSegment.equals("Gendescription=\"Assert home page loads and the featured tool section is there.\",esByeQTL") ||
-            urlSegment.equals("GenesFromTranscripts") ||
-            urlSegment.equals("GenesByPlasmoDbDataset") ||
-            urlSegment.contains("boolean_question")
-            )
+          urlSegment.equals("GenesByRNASeqUserDataset") || 
+          urlSegment.equals("Gendescription=\"Assert home page loads and the featured tool section is there.\",esByeQTL") ||
+          urlSegment.equals("GenesFromTranscripts") ||
+          urlSegment.equals("GenesByPlasmoDbDataset") ||
+          urlSegment.contains("boolean_question"))
           continue;
-
+        
         boolean hasParameters = paramNames.length() > 0;
+        
         String queryPage = this.baseurl + "/app/search/" + recordType + "/" + urlSegment;
-
         Object[] sa = new Object[3];
         sa[0] = queryPage;
         sa[1] = fullName;
         sa[2] = hasParameters;
-
         searchesArrayList.add(sa);
       }
-
     }
     return searchesArrayList.iterator();
   }
@@ -156,9 +284,8 @@ public class SeleniumTests {
     ga[0] = defaultGeneId;
     genesArrayList.add(ga);
 
-  return genesArrayList.iterator();
-
-    
+    return genesArrayList.iterator();
+ 
   }
   
   @DataProvider(name = "datasets")
@@ -166,7 +293,7 @@ public class SeleniumTests {
    
     ArrayList<Object[]> datasetsArrayList = new ArrayList<Object[]>();
     
-    JSONObject datasetsJson = parseEndpoint(baseurl + "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig=%7B\"attributes\"%3A%5B\"primary_key\"%5D%2C\"tables\"%3A%5B%5D%7D", "datasets");
+    JSONObject datasetsJson = parseEndpoint(baseurl + Utilities.DATASETS_SEARCHES, "datasets");
     JSONObject datasetsObj = (JSONObject) datasetsJson.get("datasets");
     JSONArray recordsArray = (JSONArray) datasetsObj.get("records");
 
@@ -175,37 +302,42 @@ public class SeleniumTests {
       JSONArray idArray = (JSONArray) record.get("id");
 
       JSONObject id = (JSONObject) idArray.get(0);
-      
       String datasetId = id.getString("value"); 
-      
       String datasetPage = this.baseurl + "/app/record/dataset/" + datasetId;
 
       Object[] da = new Object[2];
       da[0] = datasetPage;
       da[1] = datasetId;
-      
+     
       datasetsArrayList.add(da);
     }
-
     return datasetsArrayList.iterator();
   }
 
+  @Test(description="Checking for unique track key names")
+  public void trackKeysTest() {
+    SoftAssert softAssert = new SoftAssert();
+    HashMap<String, Integer> keyCount = createtrackKeys();
+    for (String i : keyCount.keySet()){
+      int count = keyCount.get(i);
+      softAssert.assertTrue(count == 1, "Key " + i + " used " + count + " times");
+    }
+    softAssert.assertAll();
+  }  
   
-  
-  
-  @Test(dataProvider = "searches",
-      description="Assert search page loads without error",
-      groups = {"functional_tests"})
+  @Test(dataProvider = "searches", 
+        description="Assert search page loads without error",
+        groups = {"functional_tests"})
   public void searchPage(String queryPage, String fullName, boolean hasParameters) {
-
-
+ 
     SearchForm searchForm = new SearchForm(driver, hasParameters, queryPage);
     searchForm.waitForPageToLoad();
 
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
   }
+  
   @Test(description="Assert home page loads and the featured tool section is present.",
-      groups = { "functional_tests", "performance_tests" })
+        groups = { "functional_tests", "performance_tests" })
   public void homePage () {
 
     long startTime = System.nanoTime();    
@@ -229,15 +361,16 @@ public class SeleniumTests {
    * @param url url of the page
    * @param name name of the page
    */
+  
   @Test(dataProvider="staticPages", 
-      description="Assert static content page loads without error and static-content element is present",
-      groups = { "functional_tests" })
+        description="Assert static content page loads without error and static-content element is present",
+        groups = { "functional_tests" })
   public void staticPage (String url, String name) {
     String staticPageUrl = this.baseurl + url;
     StaticContent staticContentPage = new StaticContent(driver, staticPageUrl);
     staticContentPage.waitForPageToLoad();
   }
-
+/*
   @Test(dataProvider="datasets", 
       description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
       groups = { "functional_tests" })
@@ -246,11 +379,12 @@ public class SeleniumTests {
     datasetPage.waitForPageToLoad();
     assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
   }
+  */
 
   @Test(description="Performance Test Filter Param Search Form",
-      groups = { "functional_tests", "performance_tests" })
+        groups = { "functional_tests", "performance_tests" })
   public void geneFilterSearchPage () {
-
+ 
     String url = this.baseurl + Utilities.GENE_MODEL_CHARS_SEARCH; 
     long startTime = System.nanoTime();        
 
@@ -262,12 +396,11 @@ public class SeleniumTests {
     long endTime = System.nanoTime();
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
-    
   }
 
   
   @Test(description="Performance Test Simple Search Result",
-      groups = { "functional_tests", "performance_tests" })
+        groups = { "functional_tests", "performance_tests" })
   public void geneSearchResultsPage () {
 
     int expectedResult = 1000;
@@ -288,12 +421,10 @@ public class SeleniumTests {
     long endTime = System.nanoTime();
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
-
   }
 
-
   @Test(description="Performance Test Organism Results Page",
-      groups = { "functional_tests", "performance_tests" })
+        groups = { "functional_tests", "performance_tests" })
   public void organismResultsPage () {
 
     String url = this.baseurl + Utilities.ORGANISM_RESULTS; 
@@ -303,15 +434,14 @@ public class SeleniumTests {
     long endTime = System.nanoTime();
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
-}
+  }
 
   @Test(description="Performance Test Datasets Results Page",
-      groups = { "functional_tests", "performance_tests" })
+        groups = { "functional_tests", "performance_tests" })
   public void datasetResultsPage () {
-
+ 
     String url = this.baseurl + Utilities.DATASET_RESULTS; 
     long startTime = System.nanoTime();
-
     SearchResultsPage searchResults = new SearchResultsPage(driver, url);
     searchResults.waitForPageToLoad();
     long endTime = System.nanoTime();
@@ -335,7 +465,7 @@ public class SeleniumTests {
   }
   
   @Test(description="Performance Test Sequence Retrieval Tool",
-      groups = { "functional_tests", "performance_tests" })
+        groups = { "functional_tests", "performance_tests" })
   public void geneSrtTool () {
 
     SequenceRetrievalTool srt = new SequenceRetrievalTool(this.driver, this.baseurl);
@@ -359,7 +489,6 @@ public class SeleniumTests {
         groups = { "functional_tests", "performance_tests" })
   public void geneIdSiteSearch (String geneId) {
 
-
     HomePage homePage = new HomePage(driver, this.baseurl);
     homePage.waitForPageToLoad();
 
@@ -373,14 +502,55 @@ public class SeleniumTests {
     long endTime = System.nanoTime();
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
-
-}
+  }
  
   public JSONObject parseEndpoint (String url, String rootName)  {
     this.driver.get(url);
     Service servicePage = new Service(driver);
     String jsonContent = servicePage.pageContent();
     return new JSONObject("{ \"" + rootName + "\":" + jsonContent + "}");
+  }
+  
+  
+  public HashMap<String,Integer> createtrackKeys() {
+    HashMap<String,Integer> keyCounts = new HashMap<String, Integer>();
+    JSONObject tracklistArray = parseObjectToObject(Utilities.TRACK_KEYS);
+    JSONArray typesArray = (JSONArray) tracklistArray.get("include");
+    
+    for (int i = 0; i < typesArray.length(); i++) {
+      if (i != 0 && i != 6) {
+        String urlPiece = (String) typesArray.get(i); 
+        JSONObject jbrowseTracks = parseEndpoint(System.getProperty("baseurl") + urlPiece, "track"); 
+        JSONObject tracksObj = (JSONObject) jbrowseTracks.get("track");
+        JSONArray tracksArray = (JSONArray) tracksObj.get("tracks");
+        
+        for (int j = 0; j < tracksArray.length(); j++) {
+          JSONObject track = (JSONObject) tracksArray.get(j);
+	  String key = track.getString("key");
+	  if (keyCounts.containsKey(key)) {
+	    int count = keyCounts.get(key);
+	    keyCounts.remove(key);
+	    keyCounts.put(key, count + 1);
+	  }
+	  else {
+	  keyCounts.put(key, 1);
+	  }
+	  }	
+      }
+    }
+    return keyCounts;
+  } 
+  
+  public JSONArray parseObjectToArray(String urlPiece) {
+    JSONObject obj = parseEndpoint(baseurl + urlPiece, "url");
+    JSONArray ary = (JSONArray) obj.get("url");
+    return ary;
+  }
+  
+  public JSONObject parseObjectToObject(String urlPiece) {
+    JSONObject obj = parseEndpoint(baseurl + urlPiece, "urlName");
+    JSONObject objParsed = (JSONObject) obj.get("urlName");
+    return objParsed;
   }
   
 }
