@@ -112,7 +112,7 @@ public class SeleniumTests {
       ArrayList<String> switchStrandsArrayList = new ArrayList<String>();
       ArrayList<String> datasetIdArrayList = new ArrayList<String>();
       JSONObject record = (JSONObject) recordsArray.get(i);
-      JSONObject tablesObj = (JSONObject) record.get("tables");
+      JSONObject tablesObj = (JSONObject) record.getJSONObject("tables");
       JSONArray rnaSeqSamplesInternal = tablesObj.getJSONArray("RNASeqSamplesInternal");
       
       for (int j = 0; j<rnaSeqSamplesInternal.length();j++) {
