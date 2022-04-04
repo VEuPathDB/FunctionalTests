@@ -407,7 +407,7 @@ public class SeleniumTests {
     GenesByTaxonSearchPage searchForm = new GenesByTaxonSearchPage(driver, this.baseurl);
     searchForm.waitForPageToLoad();
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + Utilities.GENES_BY_TAXON_SEARCH);
-
+    searchForm.closeBanner();
     searchForm.clickFirstTaxon();
     searchForm.getAnswer();
 

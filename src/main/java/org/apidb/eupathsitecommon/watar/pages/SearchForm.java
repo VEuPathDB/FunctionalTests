@@ -11,6 +11,8 @@ public class SearchForm extends AjaxPage {
   private By foldChangeParams = By.cssSelector(".wdk-FoldChangeParams");
   private By wizardParams = By.cssSelector(".ebrc-QuestionWizardParamContainer");
   
+  private By cookiesBanner = By.className("wdk-Link");
+
   private By getAnswer = By.xpath("//button[contains(.,'Get Answer')]");
   
   private boolean hasParameters;
@@ -25,6 +27,9 @@ public class SearchForm extends AjaxPage {
     this.driver.findElement(this.getAnswer).click();
   }
 
+  public void closeBanner() {
+    this.driver.findElement(this.cookiesBanner).click();
+  }
   
   public boolean containsError() {
     if(this.driver.getPageSource().contains("Unknown parameter")) {
