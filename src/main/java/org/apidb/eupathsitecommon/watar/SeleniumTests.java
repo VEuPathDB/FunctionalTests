@@ -4,6 +4,7 @@ package org.apidb.eupathsitecommon.watar;
 import org.openqa.selenium.WebDriver;
 //import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 //import org.openqa.selenium.htmlunit.HtmlUnitDriver;     
 import org.openqa.selenium.Dimension;
 
@@ -23,6 +24,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
 import org.apidb.eupathsitecommon.watar.pages.GeneRecordPage;
@@ -58,11 +60,14 @@ public class SeleniumTests {
 
   @BeforeTest
   public void setUp() {
-   this.driver = new ChromeDriver();
-   driver.manage().window().setSize(new Dimension(1000, 1000));
-   
-   LoginPage loginPage = new LoginPage(driver, username, password);
-   loginPage.login();
+    ChromeOptions option=new ChromeOptions();
+    option.addArguments("headless","--window-size=1000,1000");
+    //option.setHeadless(false);
+    this.driver = new ChromeDriver(option);
+    //driver.manage().window().setSize(new Dimension(1000, 1000));
+    LoginPage loginPage = new LoginPage(driver, username, password);
+    driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
+    loginPage.login();
 
    //js = (JavascriptExecutor) driver;
   }
