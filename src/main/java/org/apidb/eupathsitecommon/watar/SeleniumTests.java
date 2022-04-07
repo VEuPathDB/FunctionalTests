@@ -104,8 +104,8 @@ public class SeleniumTests {
     return staticPages.iterator();
   } 
   
-  @DataProvider(name= "rnaSeqProfile")
-  public Iterator<Object[]> rnaSeqProfile() {
+  @DataProvider(name= "createStrandSpecificRNASeqProfile")
+  public Iterator<Object[]> createStrandSpecificRNASeqProfile() {
     
     ArrayList<Object[]> finalReturnList = new ArrayList<Object[]>();
     JSONObject datasetsObj = (JSONObject) parseObjectToObject(Utilities.RNA_SEQ_PROFILE);
@@ -157,7 +157,7 @@ public class SeleniumTests {
     return finalReturnList.iterator();
   }
   
-  @Test(dataProvider = "rnaSeqProfile")
+  @Test(dataProvider = "createStrandSpecificRNASeqProfile")
   public void rnaSeqProfile (HashMap<String,Float> sampleValueFirstStrand, HashMap<String,Float> sampleValueSecondStrand, ArrayList<String> switchStrandArrayList, ArrayList<String> datasetIdArrayList) {
     String firstSwitchStrand = switchStrandArrayList.get(1);
     String firstDatasetId = datasetIdArrayList.get(0);
@@ -187,8 +187,8 @@ public class SeleniumTests {
   }
 
   
-  @DataProvider(name = "allSearches")
-  public Iterator<Object[]> createAllSearches() {
+  @DataProvider(name = "createDatasetReferences")
+  public Iterator<Object[]> createDatasetReferences() {
     ArrayList<Object[]> finalReturnList = new ArrayList<Object[]>();
     HashMap<String,Integer> allSearches = new HashMap<String, Integer>();
     JSONArray searchTypesArray = parseObjectToArray("/service/record-types");
@@ -233,8 +233,8 @@ public class SeleniumTests {
     return finalReturnList.iterator();
   }
 
-  @Test(dataProvider="allSearches")
-  public void allSearches (String datasetId, ArrayList<String> targetNamesArrayList, HashMap<String, Integer> allSearches) {
+  @Test(dataProvider="createDatasetReferences")
+  public void datasetReferences (String datasetId, ArrayList<String> targetNamesArrayList, HashMap<String, Integer> allSearches) {
     for(int j = 0; j < targetNamesArrayList.size(); j++) {
       String currentTargetName = targetNamesArrayList.get(j);
       assertTrue(allSearches.containsKey(currentTargetName), "Name not found in HashMap " + datasetId);
@@ -320,7 +320,7 @@ public class SeleniumTests {
   }
 
   @Test(description="Checking for unique track key names")
-  public void trackKeysTest() {
+  public void jbrowseUniqueKeys() {
     SoftAssert softAssert = new SoftAssert();
     HashMap<String, Integer> keyCount = createtrackKeys();
     for (String i : keyCount.keySet()){
