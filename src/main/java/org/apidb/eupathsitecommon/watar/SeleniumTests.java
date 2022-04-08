@@ -102,7 +102,34 @@ public class SeleniumTests {
     staticPages.add(methods);
     staticPages.add(infra);
     return staticPages.iterator();
-  } 
+  }
+ 
+  @DataProvider(name = "checkDatabaseCategoryExists")
+  public Iterator<Object[]> checkDatabaseCategoryExists() {
+  ArrayList<Object[]> returnArray = new ArrayList<Object[]>();
+  JSONObject datasetsObj = (JSONObject) parseObjectToObject(Utilities.CHECK_DATABASE_CATEGORY);
+  JSONArray recordsArray = (JSONArray) datasetsObj.get("records");
+  for (int i=0; i < recordsArray.length(); i++) {
+    JSONObject record = (JSONObject) recordsArray.get(i); 
+    JSONObject attributesObj = (JSONObject) record.getJSONObject("attributes");
+    JSONArray idArray = (JSONArray) record.getJSONArray("id");
+    JSONObject idValues = (JSONObject) idArray.get(0);
+    String datasetId = idValues.getString("value");
+    Object newCategory = attributesObj.get("newcategory");
+    boolean isNotNull = newCategory instanceof String;
+    Object[] sa = new Object[2];
+    sa[0] = isNotNull;
+    sa[1] = datasetId;
+    returnArray.add(sa);
+    }
+    return returnArray.iterator();
+  }
+
+  @Test(dataProvider="checkDatabaseCategoryExists",
+  	  groups = { "functional_tests" } )
+  public void testDatabaseCategoryExists (boolean isNotNull, String datasetId) {
+    assertTrue(isNotNull, "Category doesn't exist for " + datasetId);
+  }
   
   @DataProvider(name= "createStrandSpecificRNASeqProfile")
   public Iterator<Object[]> createStrandSpecificRNASeqProfile() {
