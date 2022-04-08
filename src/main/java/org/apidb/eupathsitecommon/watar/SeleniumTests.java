@@ -103,7 +103,28 @@ public class SeleniumTests {
     staticPages.add(infra);
     return staticPages.iterator();
   }
- 
+  
+  @DataProvider (name = "checkGenesWithUserComments")
+  public Iterator<Object[]> checkGenesWithUserComments() {
+    ArrayList<Object[]> returnArray = new ArrayList<Object[]>();
+    driver.get(baseurl + Utilities.GENES_WITH_USER_COMMENTS);
+    driver.findElement(By.xpath("//button[contains(.,'Get Answer')]")).click();
+    String commentCount = driver.findElement(By.className("StepBoxes--StepCount")).getText();
+    String noGenes = commentCount.replace(" Genes", "");
+    String noCommas = noGenes.replace(",", "");
+    int commentCountFinal = Integer.parseInt(noCommas);
+    Object[] sa = new Object[1];
+    sa[0] = commentCountFinal;
+    returnArray.add(sa);
+    return returnArray.iterator();
+  }
+  
+  @Test(dataProvider="checkGenesWithUserComments",
+	  groups = { "functional_tests" } )
+  public void userCommentsNotZero (int commentCount) {
+    assertTrue(commentCount>0, "There are no user comments " + baseurl);
+  }
+
   @DataProvider(name = "checkDatabaseCategoryExists")
   public Iterator<Object[]> checkDatabaseCategoryExists() {
   ArrayList<Object[]> returnArray = new ArrayList<Object[]>();

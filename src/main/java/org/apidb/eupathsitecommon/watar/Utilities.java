@@ -20,6 +20,7 @@ public class Utilities {
     public static final String GENOME_DATA_TYPES = "/service/record-types/organism/searches/GenomeDataTypes/reports/standard?reportConfig=%7B%22attributes%22:[%22primary_key%22,%22rnaseqcount%22],%22tables%22:[],%22attributeFormat%22:%22text%22%7D";  
     public static final String RNA_SEQ_PROFILE = "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig=%7B\"attributes\"%3A%5B\"primary_key\"%5D%2C\"tables\"%3A%5B\"RNASeqSamplesInternal\"%5D%7D\"";
     public static final String CHECK_DATABASE_CATEGORY = "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig=%7B%22attributes%22%3A%5B%22primary_key%22%2C%22newcategory%22%5D%7D%22";
+    public static final String GENES_WITH_USER_COMMENTS = "/app/search/transcript/GenesWithUserComments";
   
     // Community
     public static final String NEWS_PATH = "/app/static-content/PlasmoDB/news.html";
