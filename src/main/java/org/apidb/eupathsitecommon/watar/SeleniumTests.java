@@ -38,6 +38,7 @@ import org.apidb.eupathsitecommon.watar.pages.SequenceRetrievalTool;
 import org.apidb.eupathsitecommon.watar.pages.Service;
 import org.apidb.eupathsitecommon.watar.pages.SiteSearchResults;
 import org.apidb.eupathsitecommon.watar.pages.StaticContent;
+import org.apidb.eupathsitecommon.watar.pages.UserComments;
 
 public class SeleniumTests {
   private WebDriver driver;
@@ -107,12 +108,8 @@ public class SeleniumTests {
   @DataProvider (name = "checkGenesWithUserComments")
   public Iterator<Object[]> checkGenesWithUserComments() {
     ArrayList<Object[]> returnArray = new ArrayList<Object[]>();
-    driver.get(baseurl + Utilities.GENES_WITH_USER_COMMENTS);
-    driver.findElement(By.xpath("//button[contains(.,'Get Answer')]")).click();
-    String commentCount = driver.findElement(By.className("StepBoxes--StepCount")).getText();
-    String noGenes = commentCount.replace(" Genes", "");
-    String noCommas = noGenes.replace(",", "");
-    int commentCountFinal = Integer.parseInt(noCommas);
+    UserComments userComments = new UserComments(driver, this.baseurl);
+    int commentCountFinal = userComments.getCommentCount(baseurl);
     Object[] sa = new Object[1];
     sa[0] = commentCountFinal;
     returnArray.add(sa);
