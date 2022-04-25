@@ -21,7 +21,10 @@ public class Utilities {
     public static final String RNA_SEQ_PROFILE = "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig=%7B\"attributes\"%3A%5B\"primary_key\"%5D%2C\"tables\"%3A%5B\"RNASeqSamplesInternal\"%5D%7D\"";
     public static final String CHECK_DATABASE_CATEGORY = "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig=%7B%22attributes%22%3A%5B%22primary_key%22%2C%22newcategory%22%5D%7D%22";
     public static final String GENES_WITH_USER_COMMENTS = "/app/search/transcript/GenesWithUserComments";
-  
+
+    public static final String TESTING_URL = "https://jbrestel.plasmodb.org/plasmo.jbrestel/service/record-types/legacy-dataset/searches/Datasets/reports/standard?reportConfig=%7B%22attributes%22%3A%5B%22primary_key%22%5D%2C%22tables%22%3A%5B%5D%2C%22attributeFormat%22%3A%22text%22%7D&auth_tkt=NGE1YTVkMzFhMDcwMjczMWZjYjY2Nzc5NzY5ZmQ1NDY2MjY2YWE5YmFwaWRiIWFwaWRiITE2NTA4OTU1MTU6";
+    public static final String PRODUCTION_DATASETS = "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig={%22attributes%22%3A[%22primary_key%22]%2C%22tables%22%3A[%22Version%22]}%22";
+    
     // Community
     public static final String NEWS_PATH = "/app/static-content/PlasmoDB/news.html";
     public static final String RELATED_SITES = "/app/static-content/PlasmoDB/externalLinks.html";

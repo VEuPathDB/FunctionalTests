@@ -6,7 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 //import org.openqa.selenium.htmlunit.HtmlUnitDriver;     
-import org.openqa.selenium.Dimension;
+//import org.openqa.selenium.Dimension;
 
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
-import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
+//import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
 import org.apidb.eupathsitecommon.watar.pages.GeneRecordPage;
 import org.apidb.eupathsitecommon.watar.pages.GenesByLocusTagSearchPage;
 import org.apidb.eupathsitecommon.watar.pages.GenesByTaxonSearchPage;
@@ -363,6 +363,55 @@ public class SeleniumTests {
     }
     return datasetsArrayList.iterator();
   }
+  
+  @DataProvider(name = "legacyDatasets")
+  public Iterator<Object[]> createLegacyDatasets() {
+    ArrayList<Object[]> finalReturnList = new ArrayList<Object[]>();
+    HashMap<String,String> legacyIdName = new HashMap<String, String>();
+    HashMap<String,String> productionIdName = new HashMap<String, String>();
+    JSONObject legacyDatasetsJson = parseEndpoint(Utilities.TESTING_URL, "test");
+    JSONObject productionDatasetsJson = parseEndpoint(baseurl + Utilities.PRODUCTION_DATASETS, "production");
+    JSONObject legacyDatasetsObj = (JSONObject) legacyDatasetsJson.get("test");
+    JSONObject productionDatasetsObj = (JSONObject) productionDatasetsJson.get("production");
+    JSONArray legacyRecordsArray = (JSONArray) legacyDatasetsObj.get("records");
+    JSONArray productionRecordsArray = (JSONArray) productionDatasetsObj.get("records");
+    for(int i = 0; i < legacyRecordsArray.length(); i++) {
+        JSONObject record = (JSONObject) legacyRecordsArray.get(i);
+        JSONArray idArray = (JSONArray) record.get("id");
+        JSONObject idGroup = (JSONObject) idArray.get(0);
+        JSONObject nameGroup = (JSONObject) idArray.get(1);
+        String id = idGroup.getString("value");
+        String name = nameGroup.getString("value");
+        legacyIdName.put(id, name);
+    }
+    for(int i = 0; i < productionRecordsArray.length(); i++) {
+    	JSONObject record = (JSONObject) productionRecordsArray.get(i);
+    	JSONObject tables = (JSONObject) record.get("tables");
+        JSONArray versionArray = (JSONArray) tables.get("Version");
+        JSONObject versionGroup = (JSONObject) versionArray.get(0);
+        String id = versionGroup.getString("dataset_id");
+        String name = versionGroup.getString("dataset_name");
+        productionIdName.put(id, name);
+    }
+    Object[] da = new Object[2];
+    da[0] = legacyIdName;
+    da[1] = productionIdName;
+    finalReturnList.add(da);
+    return finalReturnList.iterator();
+  }  
+  
+  @Test(dataProvider="legacyDatasets")
+  public void aaalegacyDatasets (HashMap<String, String> legacyIdName, HashMap<String, String> productionIdName) {
+	  for (String i : legacyIdName.keySet()) {
+		  //assertTrue(productionIdName.containsKey(i), "Missing Dataset: " + i);
+		  if (!productionIdName.containsKey(i)) {
+			  System.out.println("Dataset missing: " + i + " name: " + legacyIdName.get(i));
+		} 
+	  }
+	  //for (String j : legacyIdName.values()) {
+		  //assertTrue(productionIdName.containsValue(j), "Missing Dataset: " + j);
+		//}
+  }
 
   @Test(description="Checking for unique track key names")
   public void jbrowseUniqueKeys() {
@@ -374,6 +423,7 @@ public class SeleniumTests {
     }
     softAssert.assertAll();
   }  
+  
   
   @Test(dataProvider = "searches", 
         description="Assert search page loads without error",
@@ -411,7 +461,7 @@ public class SeleniumTests {
    * @param url url of the page
    * @param name name of the page
    */
-  
+
   @Test(dataProvider="staticPages", 
         description="Assert static content page loads without error and static-content element is present",
         groups = { "functional_tests" })
@@ -420,6 +470,7 @@ public class SeleniumTests {
     StaticContent staticContentPage = new StaticContent(driver, staticPageUrl);
     staticContentPage.waitForPageToLoad();
   }
+  
 /*
   @Test(dataProvider="datasets", 
       description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
@@ -429,7 +480,7 @@ public class SeleniumTests {
     datasetPage.waitForPageToLoad();
     assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
   }
-  */
+ */
 
   @Test(description="Performance Test Filter Param Search Form",
         groups = { "functional_tests", "performance_tests" })
@@ -553,7 +604,7 @@ public class SeleniumTests {
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
- 
+  
   public JSONObject parseEndpoint (String url, String rootName)  {
     this.driver.get(url);
     Service servicePage = new Service(driver);
