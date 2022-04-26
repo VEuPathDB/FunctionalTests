@@ -363,54 +363,68 @@ public class SeleniumTests {
     }
     return datasetsArrayList.iterator();
   }
-  
+
   @DataProvider(name = "legacyDatasets")
   public Iterator<Object[]> createLegacyDatasets() {
     ArrayList<Object[]> finalReturnList = new ArrayList<Object[]>();
     HashMap<String,String> legacyIdName = new HashMap<String, String>();
     HashMap<String,String> productionIdName = new HashMap<String, String>();
-    JSONObject legacyDatasetsJson = parseEndpoint(Utilities.TESTING_URL, "test");
+    HashMap<String,String> mappingTable = new HashMap<String,String>();
+    JSONObject legacyDatasetsJson = parseEndpoint(baseurl + Utilities.TESTING_URL, "test");
     JSONObject productionDatasetsJson = parseEndpoint(baseurl + Utilities.PRODUCTION_DATASETS, "production");
+    JSONObject mappingTableJson = parseEndpoint(baseurl + Utilities.MAPPING_TABLE, "mapping");
     JSONObject legacyDatasetsObj = (JSONObject) legacyDatasetsJson.get("test");
     JSONObject productionDatasetsObj = (JSONObject) productionDatasetsJson.get("production");
+    JSONObject mappingTableObj = (JSONObject) mappingTableJson.get("mapping");
     JSONArray legacyRecordsArray = (JSONArray) legacyDatasetsObj.get("records");
     JSONArray productionRecordsArray = (JSONArray) productionDatasetsObj.get("records");
+    JSONArray mappingRecordsArray = (JSONArray) mappingTableObj.get("records");
     for(int i = 0; i < legacyRecordsArray.length(); i++) {
-        JSONObject record = (JSONObject) legacyRecordsArray.get(i);
-        JSONArray idArray = (JSONArray) record.get("id");
-        JSONObject idGroup = (JSONObject) idArray.get(0);
-        JSONObject nameGroup = (JSONObject) idArray.get(1);
-        String id = idGroup.getString("value");
-        String name = nameGroup.getString("value");
-        legacyIdName.put(id, name);
+      JSONObject record = (JSONObject) legacyRecordsArray.get(i);
+      JSONArray idArray = (JSONArray) record.get("id");
+      JSONObject idGroup = (JSONObject) idArray.get(0);
+      JSONObject nameGroup = (JSONObject) idArray.get(1);
+      String id = idGroup.getString("value");
+      String name = nameGroup.getString("value");
+      legacyIdName.put(id, name);
     }
     for(int i = 0; i < productionRecordsArray.length(); i++) {
-    	JSONObject record = (JSONObject) productionRecordsArray.get(i);
-    	JSONObject tables = (JSONObject) record.get("tables");
-        JSONArray versionArray = (JSONArray) tables.get("Version");
-        JSONObject versionGroup = (JSONObject) versionArray.get(0);
-        String id = versionGroup.getString("dataset_id");
-        String name = versionGroup.getString("dataset_name");
-        productionIdName.put(id, name);
+      JSONObject record = (JSONObject) productionRecordsArray.get(i);
+      JSONObject tables = (JSONObject) record.get("tables");
+      JSONArray versionArray = (JSONArray) tables.get("Version");
+      JSONObject versionGroup = (JSONObject) versionArray.get(0);
+      String id = versionGroup.getString("dataset_id");
+      String name = versionGroup.getString("dataset_name");
+      productionIdName.put(id, name);
     }
-    Object[] da = new Object[2];
+    for(int i = 0; i < mappingRecordsArray.length(); i++) {
+      JSONObject record = (JSONObject) mappingRecordsArray.get(i);
+      JSONObject tables = (JSONObject) record.get("tables");
+      JSONArray datasetAliasArray = (JSONArray) tables.get("DatasetAlias");
+      JSONObject aliasGroup = (JSONObject) datasetAliasArray.get(0);
+      String oldId = aliasGroup.getString("old_dataset_id");
+      String newId = aliasGroup.getString("dataset_id");
+      mappingTable.put(oldId, newId);
+    }
+    Object[] da = new Object[3];
     da[0] = legacyIdName;
     da[1] = productionIdName;
+    da[2] = mappingTable;
     finalReturnList.add(da);
     return finalReturnList.iterator();
   }  
   
   @Test(dataProvider="legacyDatasets")
-  public void aaalegacyDatasets (HashMap<String, String> legacyIdName, HashMap<String, String> productionIdName) {
-	  for (String i : legacyIdName.keySet()) {
-		  //assertTrue(productionIdName.containsKey(i), "Missing Dataset: " + i);
-		  if (!productionIdName.containsKey(i)) {
-			  System.out.println("Dataset missing: " + i + " name: " + legacyIdName.get(i));
-		} 
-	  }
-	  //for (String j : legacyIdName.values()) {
-		  //assertTrue(productionIdName.containsValue(j), "Missing Dataset: " + j);
-		//}
+  public void aaalegacyDatasets (HashMap<String, String> legacyIdName, HashMap<String, String> productionIdName, HashMap<String,String> mappingTable) {
+    for (String i : legacyIdName.keySet()) {
+      if (mappingTable.containsKey(i)) {
+	String j = mappingTable.get(i);
+	assertTrue(productionIdName.containsKey(j), "Missing Dataset: old =" + i + ", new =" + j);
+      }
+      else if (!productionIdName.containsKey(i)) {
+	assertTrue(productionIdName.containsKey(i), "Dataset missing: " + i + " name: " + legacyIdName.get(i));
+      } 
+    } 
   }
 
   @Test(description="Checking for unique track key names")
