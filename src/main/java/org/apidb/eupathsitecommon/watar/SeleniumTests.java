@@ -401,12 +401,12 @@ public class SeleniumTests {
       JSONObject record = (JSONObject) mappingRecordsArray.get(i);
       JSONObject tables = (JSONObject) record.get("tables");
       JSONArray datasetAliasArray = (JSONArray) tables.get("DatasetAlias");
-      //int arraylen = datasetAliasArray.length();
-      //int indexlen = arraylen - 1;
-      JSONObject aliasGroup = (JSONObject) datasetAliasArray.get(0);
-      String oldId = aliasGroup.getString("old_dataset_id");
-      String newId = aliasGroup.getString("dataset_id");
-      mappingTable.put(oldId, newId);
+      for(int j = 0; j < datasetAliasArray.length(); j++) {
+	JSONObject aliasGroup = (JSONObject) datasetAliasArray.get(j);
+	String oldId = aliasGroup.getString("old_dataset_id");
+	String newId = aliasGroup.getString("dataset_id");
+	mappingTable.put(oldId, newId);
+      }
     }
     Object[] da = new Object[3];
     da[0] = legacyIdName;
@@ -420,7 +420,7 @@ public class SeleniumTests {
   public void aaalegacyDatasets (HashMap<String, String> legacyIdName, HashMap<String, String> productionIdName, HashMap<String,String> mappingTable) {
     for (String i : legacyIdName.keySet()) {
       if (!mappingTable.containsKey(i) & !productionIdName.containsKey(i)) {
-        System.out.println("DING " + i + " " + legacyIdName.get(i));
+	System.out.println(i + "\t" + legacyIdName.get(i) + "\tPlasmoDB");
 	//System.out.println(j + " " + i);
 	//assertTrue(productionIdName.containsKey(j), "Missing Dataset: old =" + i + ", new =" + j);
       } 

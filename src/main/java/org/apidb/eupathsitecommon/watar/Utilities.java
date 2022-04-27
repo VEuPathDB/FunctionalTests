@@ -23,7 +23,8 @@ public class Utilities {
     public static final String GENES_WITH_USER_COMMENTS = "/app/search/transcript/GenesWithUserComments";
 
     public static final String LEGACY_DATASETS = "/service/record-types/legacy-dataset/searches/Datasets/reports/standard?reportConfig=%7B%22attributes%22%3A%5B%22primary_key%22%5D%2C%22tables%22%3A%5B%5D%2C%22attributeFormat%22%3A%22text%22%7D";
-    public static final String PRODUCTION_DATASETS = "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig={%22attributes%22%3A[%22primary_key%22]%2C%22tables%22%3A[%22Version%22]}%22";
+    // SitemapDatasets give all public datasets for a site
+    public static final String PRODUCTION_DATASETS = "/service/record-types/dataset/searches/SitemapDatasets/reports/standard?reportConfig={%22attributes%22%3A[%22primary_key%22]%2C%22tables%22%3A[%22Version%22]}%22";
     public static final String MAPPING_TABLE = "/service/record-types/dataset/searches/AllDatasets/reports/standard?reportConfig={%22attributes%22%3A[%22primary_key%22]%2C%22tables%22%3A[%22DatasetAlias%22]}";
     
     // Community
