@@ -10,8 +10,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class SequenceRetrievalTool extends AjaxPage {
-  //This no longer finds anything, and causes the test to break. Not sure what this was looking for, so I can not redirect it.
-  //private By srtMainSection = By.cssSelector(".wdk-TabContent");
+  
+  private By srtMainSection = By.cssSelector(".WorkspaceNavigation");
   private By submitButton = By.xpath("//button[contains(.,'Get Sequences')]");
 
   public SequenceRetrievalTool(WebDriver driver, String baseUrl){
@@ -22,7 +22,7 @@ public class SequenceRetrievalTool extends AjaxPage {
   public void waitForPageToLoad() {
     new WebDriverWait(driver, 30, 3)
     .until(ExpectedConditions.and(
-        //ExpectedConditions.presenceOfElementLocated(this.srtMainSection),
+        ExpectedConditions.presenceOfElementLocated(this.srtMainSection),
         ExpectedConditions.presenceOfElementLocated(this.submitButton)
         ));
   }
