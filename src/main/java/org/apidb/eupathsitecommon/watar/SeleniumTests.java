@@ -23,9 +23,11 @@ import java.util.HashMap;
 import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
 //import org.apidb.eupathsitecommon.watar.pages.DatasetPage;
 import org.apidb.eupathsitecommon.watar.pages.GeneRecordPage;
 import org.apidb.eupathsitecommon.watar.pages.GenesByLocusTagSearchPage;
@@ -115,7 +117,7 @@ public class SeleniumTests {
     returnArray.add(sa);
     return returnArray.iterator();
   }
-  
+
   @Test(dataProvider="checkGenesWithUserComments",
 	  groups = { "functional_tests" } )
   public void userCommentsNotZero (int commentCount) {
@@ -148,7 +150,7 @@ public class SeleniumTests {
   public void testDatabaseCategoryExists (boolean isNotNull, String datasetId) {
     assertTrue(isNotNull, "Category doesn't exist for " + datasetId);
   }
-  
+
   @DataProvider(name= "createStrandSpecificRNASeqProfile")
   public Iterator<Object[]> createStrandSpecificRNASeqProfile() {
     
@@ -201,7 +203,7 @@ public class SeleniumTests {
     }
     return finalReturnList.iterator();
   }
-  
+
   @Test(dataProvider = "createStrandSpecificRNASeqProfile")
   public void rnaSeqProfile (HashMap<String,Float> sampleValueFirstStrand, HashMap<String,Float> sampleValueSecondStrand, ArrayList<String> switchStrandArrayList, ArrayList<String> datasetIdArrayList) {
     String firstSwitchStrand = switchStrandArrayList.get(1);
@@ -285,7 +287,7 @@ public class SeleniumTests {
       assertTrue(allSearches.containsKey(currentTargetName), "Name not found in HashMap " + datasetId);
     }
   }
- 
+
   @DataProvider(name = "searches")
   public Iterator<Object[]> createSearches() {
     
@@ -323,6 +325,37 @@ public class SeleniumTests {
     return searchesArrayList.iterator();
   }
   
+
+  @DataProvider(name = "testSearches")
+  public Iterator<Object[]> createTestSearches() {
+    ArrayList<Object[]> testSearchesArrayList = new ArrayList<Object[]>();
+    ArrayList<String> queryPageList = new ArrayList<String>(Utilities.failedQueryPageList);
+    ArrayList<String> fullNameList = new ArrayList<String>(Utilities.failedFullNameList);
+    ArrayList<Boolean> hasParametersList = new ArrayList<Boolean>(Utilities.failedHasParametersList);
+    for(int i = 0; i < queryPageList.size(); i++) {
+      String queryPage = queryPageList.get(i);
+      String fullName = fullNameList.get(i);
+      Boolean hasParameters = hasParametersList.get(i);
+      Object[] da = new Object[3];
+      da[0] = queryPage;
+      da[1] = fullName;
+      da[2] = hasParameters;
+      testSearchesArrayList.add(da);
+    }
+    return testSearchesArrayList.iterator();
+  }
+  
+  @Test(dataProvider = "testSearches", 
+        description="Assert search page loads without error",
+        groups = {"functional_tests"})
+  public void testSearchPage(String queryPage, String fullName, boolean hasParameters) {
+ 
+    SearchForm searchForm = new SearchForm(driver, hasParameters, queryPage);
+    searchForm.waitForPageToLoad();
+
+    assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
+  }
+
   
   @DataProvider(name = "geneIds")
   public Iterator<Object[]> createGeneIds() {
@@ -363,6 +396,30 @@ public class SeleniumTests {
     }
     return datasetsArrayList.iterator();
   }
+
+  @DataProvider(name = "testdatasets")
+  public Iterator<Object[]> createtestDatasets() {
+    ArrayList<Object[]> testDatasetsArrayList = new ArrayList<Object[]>();
+    ArrayList<String> failedDatasetIds = new ArrayList<String>(Utilities.failedDatasetIds);
+    for(int i = 0; i < failedDatasetIds.size(); i++) {
+      String datasetId = failedDatasetIds.get(i);
+      String datasetPage = this.baseurl + "/app/record/dataset/" + datasetId;
+      Object[] da = new Object[2];
+      da[0] = datasetPage;
+      da[1] = datasetId;
+      testDatasetsArrayList.add(da);
+    }
+    return testDatasetsArrayList.iterator();
+  }
+
+  @Test(dataProvider="testdatasets", 
+	      description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
+	      groups = { "functional_tests" })
+	  public void testDatasetPage (String datasetPageUrl, String datasetId) {
+	    DatasetPage datasetPage = new DatasetPage(driver, datasetPageUrl);
+	    datasetPage.waitForPageToLoad();
+	    assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
+	  }
 
   @DataProvider(name = "legacyDatasets")
   public Iterator<Object[]> createLegacyDatasets() {
@@ -415,7 +472,7 @@ public class SeleniumTests {
     finalReturnList.add(da);
     return finalReturnList.iterator();
   }  
-  
+
   @Test(dataProvider="legacyDatasets")
   public void aaalegacyDatasets (HashMap<String, String> legacyIdName, HashMap<String, String> productionIdName, HashMap<String,String> mappingTable) {
     for (String i : legacyIdName.keySet()) {
@@ -427,6 +484,7 @@ public class SeleniumTests {
     } 
   }
 
+
   @Test(description="Checking for unique track key names")
   public void jbrowseUniqueKeys() {
     SoftAssert softAssert = new SoftAssert();
@@ -437,8 +495,8 @@ public class SeleniumTests {
     }
     softAssert.assertAll();
   }  
-  
-  
+
+
   @Test(dataProvider = "searches", 
         description="Assert search page loads without error",
         groups = {"functional_tests"})
@@ -449,7 +507,8 @@ public class SeleniumTests {
 
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
   }
-  
+
+
   @Test(description="Assert home page loads and the featured tool section is present.",
         groups = { "functional_tests", "performance_tests" })
   public void homePage () {
@@ -484,8 +543,8 @@ public class SeleniumTests {
     StaticContent staticContentPage = new StaticContent(driver, staticPageUrl);
     staticContentPage.waitForPageToLoad();
   }
-  
-/*
+
+
   @Test(dataProvider="datasets", 
       description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
       groups = { "functional_tests" })
@@ -494,7 +553,7 @@ public class SeleniumTests {
     datasetPage.waitForPageToLoad();
     assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
   }
- */
+
 
   @Test(description="Performance Test Filter Param Search Form",
         groups = { "functional_tests", "performance_tests" })
@@ -538,6 +597,7 @@ public class SeleniumTests {
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
 
+
   @Test(description="Performance Test Organism Results Page",
         groups = { "functional_tests", "performance_tests" })
   public void organismResultsPage () {
@@ -550,6 +610,7 @@ public class SeleniumTests {
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
+
 
   @Test(description="Performance Test Datasets Results Page",
         groups = { "functional_tests", "performance_tests" })
@@ -564,7 +625,7 @@ public class SeleniumTests {
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);    
   }
 
-  
+
   @Test(dataProvider="geneIds", 
         description="Performance Test Default Gene Record Page",
         groups = { "functional_tests", "performance_tests" })
@@ -578,7 +639,8 @@ public class SeleniumTests {
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);    
   }
-  
+
+
   @Test(description="Performance Test Sequence Retrieval Tool",
         groups = { "functional_tests", "performance_tests" })
   public void geneSrtTool () {
@@ -599,6 +661,7 @@ public class SeleniumTests {
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
 
+
   @Test(dataProvider="geneIds", 
         description="Performance Test Site Search",
         groups = { "functional_tests", "performance_tests" })
@@ -618,7 +681,7 @@ public class SeleniumTests {
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
-  
+
   public JSONObject parseEndpoint (String url, String rootName)  {
     this.driver.get(url);
     Service servicePage = new Service(driver);

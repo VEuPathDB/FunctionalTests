@@ -1,5 +1,8 @@
 package org.apidb.eupathsitecommon.watar;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Utilities {
     public static final String PAGE_LOAD_TIME = "PageLoadTime";
   
@@ -45,5 +48,13 @@ public class Utilities {
     public static final String INFRASTRUCTURE = "/app/static-content/infrastructure.html";
 
     public static final String LOGIN_PAGE = "https://eupathdb.org/auth/bin/autologin";
+    
+    // Testing Failures
+    
+    public static final List<String> failedDatasetIds = Arrays.asList("DS_61a2aa522a","DS_4c658d9e1c","DS_dcb85fe8e7");
   
+    public static final List<String> failedQueryPageList = Arrays.asList("https://plasmodb.org/plasmo/app/search/transcript/GenesByOrthologPattern","https://plasmodb.org/plasmo/app/search/transcript/GenesWithEpitopes");
+    public static final List<String> failedFullNameList = Arrays.asList("GeneQuestions.GenesByOrthologPattern","GeneQuestions.GenesWithEpitopes");
+    public static final List<Boolean> failedHasParametersList = Arrays.asList(true,true);
+    
 }
