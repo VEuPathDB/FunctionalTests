@@ -8,12 +8,9 @@ public class LegacyDatasets {
 	
 	String j = legacyIdName.get(i);
 	
-	if(productionIdName.containsKey(j)) {
-        return true;
-    }
-    else {  
-        return false;
-    }
+	boolean result = (productionIdName.containsKey(j)) ? true : false;
+    return result;
+	
   }
     
 }

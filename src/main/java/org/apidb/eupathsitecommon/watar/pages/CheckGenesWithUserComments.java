@@ -4,14 +4,9 @@ public class CheckGenesWithUserComments {
   
   public static boolean containsError(int commentCount) {
     
-	if(commentCount <= 0) {
-        return true;
-    }
-  
-    else {  
-        return false;
-    }
-  
+	boolean result = (commentCount <= 0) ? true : false;
+    return result;
+	
   }
  
 }

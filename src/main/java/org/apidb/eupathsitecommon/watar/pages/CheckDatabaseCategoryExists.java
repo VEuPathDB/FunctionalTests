@@ -4,13 +4,8 @@ public class CheckDatabaseCategoryExists {
   
   public static boolean containsError(boolean isNotNull) {
     
-	if(!isNotNull) {
-        return true;
-    }
-  
-    else {  
-        return false;
-    }
+	boolean result = (isNotNull) == false ? true : false;
+	return result;
   
   }
  

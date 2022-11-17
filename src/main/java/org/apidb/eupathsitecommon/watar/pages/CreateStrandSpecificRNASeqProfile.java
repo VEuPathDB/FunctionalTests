@@ -9,52 +9,42 @@ public class CreateStrandSpecificRNASeqProfile {
 	
 	String datasetId = datasetIdArrayList.get(j);
 	
-	if(firstDatasetId.equals(datasetId)) {
-        return true;
-    }
-    else {  
-        return false;
-    }
+	boolean result = (firstDatasetId.equals(datasetId)) ? true : false;
+    return result;
+	
   }
   
   public static boolean checkStrandSize (HashMap<String,Float> sampleValueFirstStrand, HashMap<String,Float> sampleValueSecondStrand) {
-		if(sampleValueFirstStrand.size()==sampleValueSecondStrand.size()) {
-	        return true;
-	    }
-	    else {  
-	        return false;
-	    }
-	  }
+	
+	boolean result = (sampleValueFirstStrand.size()==sampleValueSecondStrand.size()) ? true : false;
+	return result;
+	
+  }
  
   public static boolean checkStrandConsistency (String firstSwitchStrand, ArrayList<String> switchStrandArrayList, int k) {
+	
 	String switchStrand = switchStrandArrayList.get(k);
-    if(firstSwitchStrand.equals(switchStrand)) {
-	    return true;
-	}
-	else {  
-	    return false;
-	}
+    
+	boolean result = (firstSwitchStrand.equals(switchStrand)) ? true : false;
+	return result;
+	
   }
   
   public static boolean checkAverageValues (HashMap<String,Float> sampleValueFirstStrand, HashMap<String,Float> sampleValueSecondStrand, String firstSwitchStrand, String i) {
+	
 	Float averageValueFirstStrand = sampleValueFirstStrand.get(i);
     Float averageValueSecondStrand = sampleValueSecondStrand.get(i);
+    
     if (firstSwitchStrand.equals("false")) {
-    	if(averageValueFirstStrand>averageValueSecondStrand) {
-            return true;
-        }
-    	else {  
-    	    return false;
-        }
+    	boolean result = (averageValueFirstStrand>averageValueSecondStrand) ? true : false;
+        return result;
     } 
+    
     else if (firstSwitchStrand.equals("true")) {
-    	if(averageValueSecondStrand>averageValueFirstStrand) {
-            return true;
-        }
-    	else {  
-    	    return false;
-        }
+    	boolean result = (averageValueSecondStrand>averageValueFirstStrand) ? true : false;
+        return result;
     }
+    
     else {
         return false;	
     }
