@@ -11,7 +11,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class SearchResultsPage extends AjaxPage{
 
   private By primaryKeyColumn = By.cssSelector(".HeadingCell--key-primary_key");
-  private By organismFilterFirstNode = By.cssSelector(".wdk-CheckboxTreeItem:nth-child(1) .OrganismFilter--NodeCount");
+  private By organismFilterFirstNode = By.cssSelector("#wdk-container > div > main > div > div:nth-child(3) > div:nth-child(2) > div.OrganismFilter > div:nth-child(1) > div:nth-child(5) > ul > li:nth-child(1) > div > label > div > div > div:nth-child(2)");
   
   public SearchResultsPage(WebDriver driver, String url) {
     super(driver, url);

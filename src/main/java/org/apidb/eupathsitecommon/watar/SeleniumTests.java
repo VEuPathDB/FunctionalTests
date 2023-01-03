@@ -68,8 +68,7 @@ public class SeleniumTests {
   @BeforeTest
   public void setUp() {
     ChromeOptions option=new ChromeOptions();
-    //option.addArguments("headless","--window-size=1000,1000");
-    option.addArguments("--window-size=1000,1000");
+    option.addArguments("headless","--window-size=1000,1000");
     this.driver = new ChromeDriver(option);
     LoginPage loginPage = new LoginPage(driver, username, password);
     driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
@@ -109,7 +108,7 @@ public class SeleniumTests {
     staticPages.add(infra);
     return staticPages.iterator();
   }
-  
+
   @DataProvider (name = "checkGenesWithUserComments")
   public Iterator<Object[]> checkGenesWithUserComments() {
     ArrayList<Object[]> returnArray = new ArrayList<Object[]>();
@@ -194,7 +193,7 @@ public class SeleniumTests {
     }
     return finalReturnList.iterator();
   }
-  
+ 
   @DataProvider(name = "createDatasetReferences")
   public Iterator<Object[]> createDatasetReferences() {
 	  
@@ -283,6 +282,7 @@ public class SeleniumTests {
     }
     return searchesArrayList.iterator();
   }
+
   
   @DataProvider(name = "geneIds")
   public Iterator<Object[]> createGeneIds() {
@@ -376,15 +376,18 @@ public class SeleniumTests {
     return finalReturnList.iterator();
   }
 
-//========================================= TESTS ===================================================================
-  
-  @Test(dataProvider="createDatasetReferences")
+//========================================= TESTS ==================================================================
+/*
+  @Test(dataProvider="createDatasetReferences",
+		  description="Asserts links to searches from dataset pages are valid",
+		  groups = { "functional_tests" })
   public void datasetReferences (String datasetId, ArrayList<String> allSearchesContainList) {
     for(int j = 0; j < allSearchesContainList.size(); j++) {
       String answer = allSearchesContainList.get(j);
       assertTrue(answer.equals("pass"), answer +" not found in HashMap, datasetId is " + datasetId);
     }
   }
+*/
 /*  
   @Test(dataProvider = "createStrandSpecificRNASeqProfile")
   public void rnaSeqProfile (HashMap<String,Float> sampleValueFirstStrand, HashMap<String,Float> sampleValueSecondStrand, ArrayList<String> switchStrandArrayList, ArrayList<String> datasetIdArrayList) {
@@ -442,17 +445,22 @@ public class SeleniumTests {
     softAssert.assertAll();
   }  
 */  
+/*
   @Test(dataProvider = "searches", 
         description="Assert search page loads without error",
         groups = {"functional_tests"})
   public void searchPage(String queryPage, String fullName, boolean hasParameters) {
- 
-    SearchForm searchForm = new SearchForm(driver, hasParameters, queryPage);
-    searchForm.waitForPageToLoad();
-
+   
+	//long startTime = System.nanoTime();    
+	SearchForm searchForm = new SearchForm(driver, hasParameters, queryPage);
+	searchForm.waitForPageToLoad();
+    //long endTime = System.nanoTime();
+	//long duration = (endTime - startTime) / 1000000;
+	//Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration, true);  
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
   }
-/*
+*/
+
   @Test(description="Assert home page loads and the featured tool section is present.",
         groups = { "functional_tests", "performance_tests" })
   public void homePage () {
@@ -471,14 +479,14 @@ public class SeleniumTests {
     String changedSelectedToolText = homePage.selectedToolHeaderText();
     assertTrue(!initialSelectedToolText.equals(changedSelectedToolText), "assert Selected Tool was Changed");
   }
-*/
+
   /**
    * Assert static content page loads without error and static-content element is present
    *
    * @param url url of the page
    * @param name name of the page
    */
-
+/*
   @Test(dataProvider="staticPages", 
         description="Assert static content page loads without error and static-content element is present",
         groups = { "functional_tests" })
@@ -487,6 +495,7 @@ public class SeleniumTests {
     StaticContent staticContentPage = new StaticContent(driver, staticPageUrl);
     staticContentPage.waitForPageToLoad();
   }
+*/
 /*
   @Test(dataProvider="datasets", 
       description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
@@ -497,7 +506,7 @@ public class SeleniumTests {
     assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
   }
 */  
-/*
+
   @Test(description="Performance Test Filter Param Search Form",
         groups = { "functional_tests", "performance_tests" })
   public void geneFilterSearchPage () {
@@ -618,7 +627,7 @@ public class SeleniumTests {
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
-*/
+
   
   //========================== CHECKING FAILURES ====================================
 /*

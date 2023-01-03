@@ -8,7 +8,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class HomePage extends AjaxPage{
   
-  private By checkBoxTreeItem = By.cssSelector(".wdk-CheckboxTreeList:nth-child(3) > .wdk-CheckboxTreeItem:nth-child(1) > .wdk-CheckboxTreeNodeWrapper span");
+  private By checkBoxTreeItem = By.cssSelector("#wdk-container > div > nav > div > div > div > div.css-1l4w6pd > div > label > input[type=search]");
 
   private By selectedToolBody = By.cssSelector(".vpdb-FeaturedToolsSelectionBody");
 

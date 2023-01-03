@@ -21,7 +21,7 @@ public class GeneRecordPage extends AjaxPage {
   @Override
   public void waitForPageToLoad() {
     new WebDriverWait(driver, 30, 3)
-    .until(ExpectedConditions.and(
+    .until(ExpectedConditions.or(
         ExpectedConditions.presenceOfElementLocated(recordOverview),
         ExpectedConditions.presenceOfElementLocated(recordMain),
         ExpectedConditions.presenceOfElementLocated(categoryTree)

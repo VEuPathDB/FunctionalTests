@@ -30,14 +30,14 @@ public class SearchForm extends AjaxPage {
   public void closeBanner() {
     this.driver.findElement(this.cookiesBanner).click();
   }
-  
+
   public boolean containsError() {
     if(this.driver.getPageSource().contains("Unknown parameter")) {
       return true;
     }
     return false;
   }
-  
+
   @Override
   public void waitForPageToLoad() {
     if(hasParameters) {
@@ -48,7 +48,6 @@ public class SearchForm extends AjaxPage {
           ExpectedConditions.presenceOfElementLocated(wizardParams)
           ));
     }   
-
    }
-
+   
 }
