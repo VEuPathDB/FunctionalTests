@@ -22,7 +22,6 @@ public class SearchForm extends AjaxPage {
     this.hasParameters = hasParameters;
   }
 
-
   public void getAnswer() {
     this.driver.findElement(this.getAnswer).click();
   }

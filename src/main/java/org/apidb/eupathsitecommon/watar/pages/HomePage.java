@@ -8,10 +8,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class HomePage extends AjaxPage{
   
-  private By checkBoxTreeItem = By.cssSelector("#wdk-container > div > nav > div > div > div > div.css-1l4w6pd > div > label > input[type=search]");
-
-  private By selectedToolBody = By.cssSelector(".vpdb-FeaturedToolsSelectionBody");
-
+  private By selectedToolBody = By.cssSelector("div.vpdb-FeaturedToolsSelectionBody");
+  
   private By selectedTool = By.cssSelector(".vpdb-FeaturedToolsSelectionHeader");
 
   private By anotherTool = By.cssSelector(".fa-code-fork");
@@ -39,7 +37,7 @@ public class HomePage extends AjaxPage{
   @Override
   public void waitForPageToLoad() {
     new WebDriverWait(driver, 30, 3)
-    .until(ExpectedConditions.presenceOfElementLocated(checkBoxTreeItem));
+    .until(ExpectedConditions.presenceOfElementLocated(siteSearchBox));
   }
   
   public String selectedToolHeaderText() {

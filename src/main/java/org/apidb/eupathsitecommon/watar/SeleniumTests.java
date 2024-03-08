@@ -3,7 +3,10 @@ package org.apidb.eupathsitecommon.watar;
 //================== IMPORTS ================================
 
 import org.openqa.selenium.WebDriver;
-//import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 //import org.openqa.selenium.htmlunit.HtmlUnitDriver;     
@@ -67,9 +70,14 @@ public class SeleniumTests {
 
   @BeforeTest
   public void setUp() {
-    ChromeOptions option=new ChromeOptions();
-    option.addArguments("headless","--window-size=1000,1000");
-    this.driver = new ChromeDriver(option);
+  ChromeOptions option=new ChromeOptions();
+  option.addArguments("--headless","--window-size=1000,1000","--disable-dev-shm-usage");
+  this.driver = new ChromeDriver(option);
+	//FirefoxOptions option=new FirefoxOptions();
+	//FirefoxProfile profile = new FirefoxProfile();
+	//profile.setPreference("profile", "/home/rdemko/snap/firefox/common/.mozilla/firefox/profiles.ini");
+	//option.setProfile(profile);
+	//this.driver = new FirefoxDriver(option);
     LoginPage loginPage = new LoginPage(driver, username, password);
     driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
     loginPage.login();
@@ -193,7 +201,7 @@ public class SeleniumTests {
     }
     return finalReturnList.iterator();
   }
- 
+  
   @DataProvider(name = "createDatasetReferences")
   public Iterator<Object[]> createDatasetReferences() {
 	  
@@ -249,13 +257,19 @@ public class SeleniumTests {
   @DataProvider(name = "searches")
   public Iterator<Object[]> createSearches() {
     
+	System.out.println("Creating searches");
+	  
     ArrayList<Object[]> searchesArrayList = new ArrayList<Object[]>();
     JSONArray recordTypesArray = parseObjectToArray("/service/record-types");
+    
+    System.out.println("Created record types array");
     
     for(int i = 0; i < recordTypesArray.length(); i++) {
       String recordType = recordTypesArray.getString(i);
       JSONArray searchesArray = parseObjectToArray("/service/record-types/" + recordType + "/searches");
        
+      System.out.println("Created searches array for recordType");
+      
       for(int j = 0; j < searchesArray.length(); j++) {
         JSONObject search = (JSONObject) searchesArray.get(j);
         String urlSegment = (String) search.get("urlSegment");
@@ -273,6 +287,9 @@ public class SeleniumTests {
         boolean hasParameters = paramNames.length() > 0;
         
         String queryPage = this.baseurl + "/app/search/" + recordType + "/" + urlSegment;
+        if(queryPage.equals("https://amoebadb.org/amoeba/app/search/transcript/GenesByNgsSnps"))
+          System.out.println("We found the URL!");
+        
         Object[] sa = new Object[3];
         sa[0] = queryPage;
         sa[1] = fullName;
@@ -280,6 +297,7 @@ public class SeleniumTests {
         searchesArrayList.add(sa);
       }
     }
+    System.out.println("Completed Making searches");
     return searchesArrayList.iterator();
   }
 
@@ -377,7 +395,6 @@ public class SeleniumTests {
   }
 
 //========================================= TESTS ==================================================================
-/*
   @Test(dataProvider="createDatasetReferences",
 		  description="Asserts links to searches from dataset pages are valid",
 		  groups = { "functional_tests" })
@@ -387,8 +404,7 @@ public class SeleniumTests {
       assertTrue(answer.equals("pass"), answer +" not found in HashMap, datasetId is " + datasetId);
     }
   }
-*/
-/*  
+
   @Test(dataProvider = "createStrandSpecificRNASeqProfile")
   public void rnaSeqProfile (HashMap<String,Float> sampleValueFirstStrand, HashMap<String,Float> sampleValueSecondStrand, ArrayList<String> switchStrandArrayList, ArrayList<String> datasetIdArrayList) {
     String firstSwitchStrand = switchStrandArrayList.get(1);
@@ -421,19 +437,17 @@ public class SeleniumTests {
 	  public void userCommentsNotZero (int commentCount) {
 	    assertTrue(!CheckGenesWithUserComments.containsError(commentCount), "There are no user comments " + baseurl);
 	  }
-*/  
-/*
+  
   @Test(dataProvider="legacyDatasets")
   public void legacyDatasets (HashMap<String, String> legacyIdName, HashMap<String, String> productionIdName, HashMap<String,String> mappingTable) {
     for (String i : legacyIdName.keySet()) {
       if (!mappingTable.containsKey(i) & !productionIdName.containsKey(i)) {
 	    System.out.println(i + "\t" + legacyIdName.get(i));
-	    //assertTrue(LegacyDatasets.legacyIdIsMapped(productionIdName, legacyIdName, i), "Missing Dataset: old =" + i + ", new =" + legacyIdName.get(i));
+	    assertTrue(LegacyDatasets.legacyIdIsMapped(productionIdName, legacyIdName, i), "Missing Dataset: old =" + i + ", new =" + legacyIdName.get(i));
       } 
     } 
   }
-*/
-/*
+
   @Test(description="Checking for unique track key names")
   public void jbrowseUniqueKeys() {
     SoftAssert softAssert = new SoftAssert();
@@ -444,23 +458,46 @@ public class SeleniumTests {
     }
     softAssert.assertAll();
   }  
-*/  
-/*
+  
   @Test(dataProvider = "searches", 
         description="Assert search page loads without error",
         groups = {"functional_tests"})
   public void searchPage(String queryPage, String fullName, boolean hasParameters) {
    
-	//long startTime = System.nanoTime();    
+	long startTime = System.nanoTime();    
 	SearchForm searchForm = new SearchForm(driver, hasParameters, queryPage);
 	searchForm.waitForPageToLoad();
-    //long endTime = System.nanoTime();
-	//long duration = (endTime - startTime) / 1000000;
-	//Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration, true);  
+    long endTime = System.nanoTime();
+	long duration = (endTime - startTime) / 1000000;
+	Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration, true);  
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
   }
-*/
 
+  /**
+   * Assert static content page loads without error and static-content element is present
+   *
+   * @param url url of the page
+   * @param name name of the page
+   */
+
+  @Test(dataProvider="staticPages", 
+        description="Assert static content page loads without error and static-content element is present",
+        groups = { "functional_tests" })
+  public void staticPage (String url, String name) {
+    String staticPageUrl = this.baseurl + url;
+    StaticContent staticContentPage = new StaticContent(driver, staticPageUrl);
+    staticContentPage.waitForPageToLoad();
+  }
+/* Replaced by dataset references
+  @Test(dataProvider="datasets", 
+      description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
+      groups = { "functional_tests" })
+  public void datasetPage (String datasetPageUrl, String datasetId) {
+    DatasetPage datasetPage = new DatasetPage(driver, datasetPageUrl);
+    datasetPage.waitForPageToLoad();
+    assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
+  } 
+*/
   @Test(description="Assert home page loads and the featured tool section is present.",
         groups = { "functional_tests", "performance_tests" })
   public void homePage () {
@@ -473,39 +510,12 @@ public class SeleniumTests {
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
 
-    assertTrue(homePage.selectedToolBodyCount() == 1, "assert Selected Tool Body was present");
+    assertTrue(homePage.selectedToolBodyCount() == 1, homePage.selectedToolBodyCount() + " Value");
     String initialSelectedToolText = homePage.selectedToolHeaderText();
     homePage.changeSelectedTool();
     String changedSelectedToolText = homePage.selectedToolHeaderText();
     assertTrue(!initialSelectedToolText.equals(changedSelectedToolText), "assert Selected Tool was Changed");
   }
-
-  /**
-   * Assert static content page loads without error and static-content element is present
-   *
-   * @param url url of the page
-   * @param name name of the page
-   */
-/*
-  @Test(dataProvider="staticPages", 
-        description="Assert static content page loads without error and static-content element is present",
-        groups = { "functional_tests" })
-  public void staticPage (String url, String name) {
-    String staticPageUrl = this.baseurl + url;
-    StaticContent staticContentPage = new StaticContent(driver, staticPageUrl);
-    staticContentPage.waitForPageToLoad();
-  }
-*/
-/*
-  @Test(dataProvider="datasets", 
-      description="Assert dataset page loads without error.  Checks for cross-refs of wdkSearches",
-      groups = { "functional_tests" })
-  public void datasetPage (String datasetPageUrl, String datasetId) {
-    DatasetPage datasetPage = new DatasetPage(driver, datasetPageUrl);
-    datasetPage.waitForPageToLoad();
-    assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
-  }
-*/  
 
   @Test(description="Performance Test Filter Param Search Form",
         groups = { "functional_tests", "performance_tests" })
@@ -597,14 +607,35 @@ public class SeleniumTests {
     
     long startTime = System.nanoTime();        
     srt.submit(); // submit the default
-
+    
+    boolean oneWindow = true;
+    Integer waitCount = 0;
+    do {
+        if (this.driver.getWindowHandles().size() > 1){
+            oneWindow=false;
+        }
+        else {
+        	waitCount++;
+            assertTrue(waitCount<=5, "New window was never opened");
+            try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+        }
+    }
+    while (oneWindow);
+    
     Service srtResult = new Service(this.driver);
+    
     String fastaContent = srtResult.pageContent();
 
-    assertTrue(fastaContent.startsWith(">"), "Defline of fasta file should start with >");
-    assertTrue(fastaContent.length() > 500, "FASTA file should have some content");
     long endTime = System.nanoTime();
     long duration = (endTime - startTime) / 1000000;
+    
+    assertTrue(fastaContent.startsWith(">"), "Defline of fasta file should start with >");
+    assertTrue(fastaContent.length() > 500, "FASTA file should have some content");
+    
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
 
@@ -627,7 +658,6 @@ public class SeleniumTests {
     long duration = (endTime - startTime) / 1000000;
     Reporter.log(Utilities.PAGE_LOAD_TIME + "=" + duration);
   }
-
   
   //========================== CHECKING FAILURES ====================================
 /*
@@ -660,7 +690,8 @@ public class SeleniumTests {
 
     assertTrue(!searchForm.containsError(), "Search form Contained Error: " + fullName);
   }
-  
+*/
+/*
   @DataProvider(name = "testdatasets")
   public Iterator<Object[]> createtestDatasets() {
     ArrayList<Object[]> testDatasetsArrayList = new ArrayList<Object[]>();
@@ -684,17 +715,20 @@ public class SeleniumTests {
 	    datasetPage.waitForPageToLoad();
 	    assertTrue(!datasetPage.containsError(), "Failure on DatasetPage: " + datasetId);
 	  }
-*/  
+*/
   //=================================================================================
   
   public JSONObject parseEndpoint (String url, String rootName)  {
 	    this.driver.get(url);
+	    this.driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+	    System.out.println("Going to url");
 	    Service servicePage = new Service(driver);
 	    String jsonContent = servicePage.pageContent();
 	    return new JSONObject("{ \"" + rootName + "\":" + jsonContent + "}");
 	  }
   
   public JSONArray parseObjectToArray(String urlPiece) {
+	System.out.println("Parsing Endpoint");
     JSONObject obj = parseEndpoint(baseurl + urlPiece, "url");
     JSONArray ary = (JSONArray) obj.get("url");
     return ary;

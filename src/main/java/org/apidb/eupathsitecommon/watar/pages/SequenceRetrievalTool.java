@@ -31,7 +31,6 @@ public class SequenceRetrievalTool extends AjaxPage {
       WebElement submitButton = this.driver.findElement(this.submitButton);
       JavascriptExecutor js = (JavascriptExecutor) this.driver;
       js.executeScript("arguments[0].scrollIntoView();", submitButton);
-      
       submitButton.click();
   }
   
